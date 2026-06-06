@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CommitMatch | Executive Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fcf9f8;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        .map-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .7; transform: scale(1.1); }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#fcf9f8",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#d4e3ff",
+                        "on-surface-variant": "#5b403d",
+                        "on-tertiary-container": "#fff3e3",
+                        "on-primary-container": "#fff2f0",
+                        "on-tertiary-fixed-variant": "#5c4300",
+                        "surface-container-high": "#eae7e7",
+                        "tertiary": "#715300",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#001c3a",
+                        "on-tertiary-fixed": "#261a00",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#f8bd2a",
+                        "surface": "#fcf9f8",
+                        "surface-bright": "#fcf9f8",
+                        "surface-container": "#f0eded",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f3f0ef",
+                        "surface-variant": "#e5e2e1",
+                        "outline-variant": "#e4beba",
+                        "primary": "#af101a",
+                        "surface-dim": "#dcd9d9",
+                        "primary-fixed": "#ffdad6",
+                        "surface-tint": "#ba1a20",
+                        "on-surface": "#1b1b1c",
+                        "on-background": "#1b1b1c",
+                        "secondary": "#005faf",
+                        "tertiary-fixed": "#ffdfa0",
+                        "on-secondary-container": "#003567",
+                        "tertiary-container": "#8f6a00",
+                        "secondary-fixed-dim": "#a5c8ff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#ffb3ac",
+                        "surface-container-low": "#f6f3f2",
+                        "inverse-surface": "#303030",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#54a0fe",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#410003",
+                        "on-secondary-fixed-variant": "#004786",
+                        "outline": "#8f6f6c",
+                        "inverse-primary": "#ffb3ac",
+                        "primary-container": "#d32f2f",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-primary-fixed-variant": "#930010"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "32px",
+                        "sm": "8px",
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "xl": "40px",
+                        "md": "16px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "code": ["jetbrainsMono"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "14px", "fontWeight": "500"}],
+                        "code": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="flex min-h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="flex flex-col h-screen w-64 bg-inverse-surface dark:bg-surface-container-lowest text-surface-variant dark:text-on-surface-variant shadow-md shrink-0 z-40">
+<div class="p-md flex items-center gap-3">
+<div class="w-10 h-10 bg-primary flex items-center justify-center rounded">
+<span class="material-symbols-outlined text-on-primary" data-icon="water_drop">water_drop</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-primary-fixed font-black tracking-tight">CommitMatch</h2>
+<p class="font-label-sm text-label-sm opacity-70">Blood Warriors</p>
+</div>
+</div>
+<nav class="flex-1 px-md py-lg space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 bg-primary dark:bg-primary-container text-on-primary dark:text-on-primary-container rounded-lg scale-95 transition-all duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Executive Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 hover:bg-surface-variant/10 transition-all rounded-lg text-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="clinical_notes">clinical_notes</span>
+<span class="font-label-md text-label-md">Smart Matching Center</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 hover:bg-surface-variant/10 transition-all rounded-lg text-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-md text-label-md">Donor Intelligence</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 hover:bg-surface-variant/10 transition-all rounded-lg text-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+</nav>
+<div class="px-md mb-lg">
+<button class="w-full bg-primary py-3 rounded text-on-primary font-label-md text-label-md flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_alert">add_alert</span>
+                Urgent Request
+            </button>
+</div>
+<footer class="p-md border-t border-surface-variant/10">
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-1.5 hover:bg-surface-variant/10 transition-all rounded text-label-sm" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="check_circle">check_circle</span>
+                    System Status
+                </a>
+<a class="flex items-center gap-3 px-3 py-1.5 hover:bg-surface-variant/10 transition-all rounded text-label-sm" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="help">help</span>
+                    Support
+                </a>
+</div>
+</footer>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-h-screen overflow-y-auto">
+<!-- Header -->
+<header class="h-16 flex justify-between items-center px-margin-desktop bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline sticky top-0 z-30">
+<div class="flex items-center gap-gutter flex-1">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-1.5 font-body-sm text-body-sm focus:ring-1 focus:ring-primary" placeholder="Search operations..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-gutter pr-gutter border-r border-outline-variant">
+<button class="text-primary hover:bg-surface-container-high p-2 rounded transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full ring-2 ring-surface"></span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="flex items-center gap-sm">
+<img alt="Coordinator Profile" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A professional headshot of a middle-aged male healthcare coordinator with a confident and kind expression. He is wearing a clean charcoal grey blazer over a light blue shirt. The background is a brightly lit, modern office environment with a clean, high-contrast professional aesthetic, featuring soft depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxXeJ1_y_Z44h8jizLPkSvmx80157KgZPYIxGEFhTZZ5-R2CaL7ZwXWoIYAMIRdPeHV4qB4FwS-otoeEf1cTGvgGgMsNkL3Cw39VCqVLr8wuGkhzwYZl_FyyE2wP8VZ84xEU-JmlUTAb7W40bGRahVcoxB5M5mBBffj7mu-DEJ34Dc66gCXfGMF2mSW2ryzBEF8BKbM7_7K3EQr7Wf3L7rOv7EBh5or1fV8U5HKSvXD37o5oSHr8QdkkoDBtbj7CMIiltcEoG11Mw"/>
+<div class="hidden lg:block text-right">
+<p class="font-label-md text-label-md text-on-surface">Alex Rivera</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Lead Coordinator</p>
+</div>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-margin-desktop space-y-lg max-w-container-max mx-auto w-full">
+<!-- Hero KPIs -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start mb-base">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Active Requests</span>
+<span class="material-symbols-outlined text-primary" data-icon="priority_high">priority_high</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-primary">42</span>
+<span class="font-body-sm text-body-sm text-error flex items-center"><span class="material-symbols-outlined text-[16px]" data-icon="trending_up">trending_up</span> 12%</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-sm">Critical demand across 8 facilities</p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start mb-base">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Available Donors</span>
+<span class="material-symbols-outlined text-secondary" data-icon="diversity_3">diversity_3</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface">1,284</span>
+<span class="font-body-sm text-body-sm text-primary flex items-center"><span class="material-symbols-outlined text-[16px]" data-icon="verified">verified</span> +45</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-sm">Active &amp; ready for dispatch</p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start mb-base">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Response Rate</span>
+<span class="material-symbols-outlined text-tertiary" data-icon="speed">speed</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface">94.2%</span>
+<span class="font-body-sm text-body-sm text-secondary flex items-center">Target: 90%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-sm overflow-hidden">
+<div class="bg-secondary h-full" style="width: 94.2%"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start mb-base">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Live Matches</span>
+<span class="material-symbols-outlined text-primary" data-icon="rebase_edit" style="font-variation-settings: 'FILL' 1;">rebase_edit</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-primary">18</span>
+<div class="flex -space-x-2 ml-4">
+<div class="w-6 h-6 rounded-full bg-primary-fixed border-2 border-surface-container-lowest"></div>
+<div class="w-6 h-6 rounded-full bg-secondary-fixed border-2 border-surface-container-lowest"></div>
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed border-2 border-surface-container-lowest"></div>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-sm">Currently in transit or donation</p>
+</div>
+</section>
+<!-- Main Layout Grid -->
+<section class="bento-grid">
+<!-- Regional Shortage Map -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col shadow-sm">
+<div class="p-lg border-b border-outline-variant flex justify-between items-center">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Regional Supply Map</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Demand vs Supply heatmap | Real-time tracking</p>
+</div>
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-error-container text-on-error-container text-label-sm font-label-sm rounded-full flex items-center gap-1">
+<span class="w-2 h-2 bg-error rounded-full map-pulse"></span> Critical Shortage
+                            </span>
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant text-label-sm font-label-sm rounded-full">Downtown District</span>
+</div>
+</div>
+<div class="relative flex-1 min-h-[460px] bg-surface-container-low group">
+<img alt="City Map" class="w-full h-full object-cover opacity-60 grayscale mix-blend-multiply" data-alt="A high-contrast, clean digital map of a sprawling urban landscape, rendered in a professional satellite-view style with monochromatic grey tones. Overlaying the map are glowing red and orange heat map clusters indicating high activity. Data visualization elements like thin white grid lines and subtle glowing markers highlight specific points of interest. The lighting is dark and dramatic, emphasizing the glowing operational data." data-location="Chicago" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd2rkpfNh2pHckpGDuI8KHSzuoCFodL9V5JtOPDygwMNXJPiaRG3PcS7lf2Hwyrgsvv8NF8Jff3NyI90pVbmay5wwO_Em4-EvOMHGS-lxGzPSnSD-fevHWb4x3lySaSTzAbdikFz4JJtGPBNLhizDJDs1L-htMo43gBxDlvn-4UiuWwJtQtm_xtBznW5mZkRNswkgoIMp03Q8OpY_Oq-yNLJevqz-wYTtaw7LD8wvfJPlsJ88ozNca-4HuumIv-45Olj-cPv09-Jo"/>
+<!-- Heatmap Overlay Markers -->
+<div class="absolute inset-0 p-lg pointer-events-none">
+<div class="absolute top-[30%] left-[45%] w-24 h-24 bg-primary/20 rounded-full blur-xl map-pulse"></div>
+<div class="absolute top-[35%] left-[48%] flex items-center gap-2 bg-surface-container-lowest border-2 border-primary p-2 rounded shadow-xl pointer-events-auto cursor-pointer transform hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary" data-icon="emergency">emergency</span>
+<div>
+<p class="text-label-sm font-bold text-on-surface">Central General</p>
+<p class="text-[10px] text-error">O- Negative CRITICAL</p>
+</div>
+</div>
+<div class="absolute bottom-[20%] right-[30%] w-16 h-16 bg-secondary/20 rounded-full blur-xl"></div>
+<div class="absolute bottom-[22%] right-[32%] flex items-center gap-2 bg-surface-container-lowest border border-secondary p-2 rounded shadow-md pointer-events-auto cursor-pointer">
+<span class="material-symbols-outlined text-secondary" data-icon="local_hospital">local_hospital</span>
+<div>
+<p class="text-label-sm font-bold text-on-surface">Mercy West</p>
+<p class="text-[10px] text-secondary">Stable Supply</p>
+</div>
+</div>
+</div>
+<!-- Map Controls -->
+<div class="absolute bottom-lg right-lg flex flex-col gap-2">
+<button class="w-10 h-10 bg-surface-container-lowest border border-outline-variant shadow-lg flex items-center justify-center rounded hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+<button class="w-10 h-10 bg-surface-container-lowest border border-outline-variant shadow-lg flex items-center justify-center rounded hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="remove">remove</span>
+</button>
+</div>
+</div>
+</div>
+<!-- AI Predictive Insight Panel -->
+<div class="col-span-12 lg:col-span-4 space-y-lg">
+<div class="bg-inverse-surface text-on-primary-fixed p-lg rounded-xl shadow-xl border-l-4 border-tertiary relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2 opacity-10">
+<span class="material-symbols-outlined text-[100px]" data-icon="psychology">psychology</span>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-md">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" data-icon="bolt">bolt</span>
+<h4 class="font-label-md text-label-md uppercase tracking-widest text-surface-variant">AI Predictive Insight</h4>
+</div>
+<h3 class="font-headline-md text-headline-md text-surface-bright mb-sm">Downtown Spike Detected</h3>
+<p class="font-body-sm text-body-sm text-surface-variant mb-lg">
+                                Model CM-9 predicts a <span class="text-tertiary-fixed-dim font-bold">28% increase</span> in O- demand over the next 48 hours due to the upcoming metropolitan festival and historic trauma patterns.
+                            </p>
+<div class="p-md bg-white/5 rounded-lg border border-white/10 mb-lg">
+<div class="flex justify-between items-center text-label-sm mb-sm">
+<span class="text-surface-variant">Confidence Score</span>
+<span class="text-tertiary-fixed-dim">91.4%</span>
+</div>
+<div class="w-full bg-white/10 h-1 rounded-full">
+<div class="bg-tertiary-fixed-dim h-full" style="width: 91.4%"></div>
+</div>
+</div>
+<button class="w-full bg-tertiary-fixed-dim text-on-tertiary-fixed font-label-md text-label-md py-3 rounded hover:bg-tertiary-fixed transition-colors">
+                                Mobilize O- Donors Now
+                            </button>
+</div>
+</div>
+<!-- Recent Milestones List -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col shadow-sm">
+<div class="p-lg border-b border-outline-variant">
+<h3 class="font-label-md text-label-md text-on-surface">Recent Milestones</h3>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Milestone Item -->
+<div class="p-md hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="flex gap-md">
+<div class="w-10 h-10 rounded bg-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="celebration">celebration</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="font-label-md text-label-md text-on-surface">Critical Match Success</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant">2m ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">O- donor matched with Central ER for trauma case.</p>
+</div>
+</div>
+</div>
+<!-- Milestone Item -->
+<div class="p-md hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="flex gap-md">
+<div class="w-10 h-10 rounded bg-secondary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="star">star</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="font-label-md text-label-md text-on-surface">Donor Milestone</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant">45m ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Marcus T. reached 'Guardian' status (50th donation).</p>
+</div>
+</div>
+</div>
+<!-- Milestone Item -->
+<div class="p-md hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="flex gap-md">
+<div class="w-10 h-10 rounded bg-tertiary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary text-[20px]" data-icon="campaign">campaign</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="font-label-md text-label-md text-on-surface">Drive Completed</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant">2h ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Westside Campus drive exceeded target by 15%.</p>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full py-3 border-t border-outline-variant font-label-sm text-label-sm text-primary hover:bg-surface-container-low transition-colors">
+                            View All Operations
+                        </button>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer -->
+<footer class="mt-auto border-t border-outline-variant bg-surface-container dark:bg-surface-container-lowest py-md px-margin-desktop flex justify-between items-center">
+<div class="flex items-center gap-lg">
+<span class="font-label-md text-label-md font-bold text-on-surface">CommitMatch</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">© 2024 CommitMatch Blood Warriors Platform</span>
+</div>
+<div class="flex items-center gap-lg">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Security Center</a>
+<div class="flex items-center gap-1.5 px-2 py-1 bg-surface-container-high rounded text-label-sm font-label-sm text-secondary">
+<span class="w-2 h-2 bg-secondary rounded-full"></span>
+                    System Status: Operational
+                </div>
+</div>
+</footer>
+</main>
+<script>
+        // Micro-interaction for the Urgent Request button
+        document.querySelector('button.bg-primary').addEventListener('mousedown', function() {
+            this.style.transform = 'scale(0.95)';
+        });
+        document.querySelector('button.bg-primary').addEventListener('mouseup', function() {
+            this.style.transform = 'scale(1)';
+        });
+
+        // Simple tab hover effect logic
+        const navItems = document.querySelectorAll('nav a');
+        navItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                if (!item.classList.contains('bg-primary')) {
+                    item.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                }
+            });
+            item.addEventListener('mouseleave', () => {
+                if (!item.classList.contains('bg-primary')) {
+                    item.style.backgroundColor = 'transparent';
+                }
+            });
+        });
+    </script>
+</body></html>

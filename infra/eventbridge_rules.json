@@ -1,0 +1,23 @@
+[
+  {
+    "name": "standby-check",
+    "description": "Promote standby donor when primary has not responded in 4 hours",
+    "schedule": "rate(30 minutes)",
+    "lambda": "standby_promoter",
+    "state": "ENABLED"
+  },
+  {
+    "name": "rhythm-nudge",
+    "description": "Daily nudge to donors whose predicted donation window is within 7 days",
+    "schedule": "cron(30 3 * * ? *)",
+    "lambda": "rhythm_nudger",
+    "state": "ENABLED"
+  },
+  {
+    "name": "shortage-detect",
+    "description": "Detect blood group shortages every 6 hours and push alerts",
+    "schedule": "rate(6 hours)",
+    "lambda": "shortage_detector",
+    "state": "ENABLED"
+  }
+]

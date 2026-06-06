@@ -1,0 +1,81 @@
+[
+  {
+    "TableName": "commitmatch_donors",
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [{"AttributeName": "user_id", "KeyType": "HASH"}],
+    "AttributeDefinitions": [{"AttributeName": "user_id", "AttributeType": "S"}],
+    "notes": "Static donor data seeded from CSV. PK = user_id"
+  },
+  {
+    "TableName": "commitmatch_patients",
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [{"AttributeName": "bridge_id", "KeyType": "HASH"}],
+    "AttributeDefinitions": [{"AttributeName": "bridge_id", "AttributeType": "S"}],
+    "notes": "Thalassemia patients. PK = bridge_id"
+  },
+  {
+    "TableName": "commitmatch_requests",
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [{"AttributeName": "id", "KeyType": "HASH"}],
+    "AttributeDefinitions": [{"AttributeName": "id", "AttributeType": "S"}],
+    "notes": "Blood donation requests. PK = UUID"
+  },
+  {
+    "TableName": "commitmatch_rankings",
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [{"AttributeName": "id", "KeyType": "HASH"}],
+    "AttributeDefinitions": [
+      {"AttributeName": "id",         "AttributeType": "S"},
+      {"AttributeName": "request_id", "AttributeType": "S"}
+    ],
+    "GlobalSecondaryIndexes": [{
+      "IndexName": "request_id-index",
+      "KeySchema": [{"AttributeName": "request_id", "KeyType": "HASH"}],
+      "Projection": {"ProjectionType": "ALL"}
+    }],
+    "notes": "Per-request donor rankings with signal_breakdown, reasons, flags. GSI on request_id."
+  },
+  {
+    "TableName": "commitmatch_interactions",
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [{"AttributeName": "id", "KeyType": "HASH"}],
+    "AttributeDefinitions": [
+      {"AttributeName": "id",         "AttributeType": "S"},
+      {"AttributeName": "request_id", "AttributeType": "S"}
+    ],
+    "GlobalSecondaryIndexes": [{
+      "IndexName": "request_id-index",
+      "KeySchema": [{"AttributeName": "request_id", "KeyType": "HASH"}],
+      "Projection": {"ProjectionType": "ALL"}
+    }],
+    "notes": "WhatsApp inbound/outbound log. direction, sentiment, message_body."
+  },
+  {
+    "TableName": "commitmatch_memory",
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [{"AttributeName": "donor_id", "KeyType": "HASH"}],
+    "AttributeDefinitions": [{"AttributeName": "donor_id", "AttributeType": "S"}],
+    "notes": "Donor long-term memory: show_rate, outcomes, preferred_language, coordinator notes."
+  },
+  {
+    "TableName": "commitmatch_shortage_alerts",
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [{"AttributeName": "id", "KeyType": "HASH"}],
+    "AttributeDefinitions": [{"AttributeName": "id", "AttributeType": "S"}],
+    "notes": "Blood group shortage alerts by severity."
+  },
+  {
+    "TableName": "commitmatch_ws_connections",
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [{"AttributeName": "connection_id", "KeyType": "HASH"}],
+    "AttributeDefinitions": [{"AttributeName": "connection_id", "AttributeType": "S"}],
+    "notes": "Active API Gateway WebSocket connections."
+  },
+  {
+    "TableName": "commitmatch_failure_log",
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [{"AttributeName": "id", "KeyType": "HASH"}],
+    "AttributeDefinitions": [{"AttributeName": "id", "AttributeType": "S"}],
+    "notes": "Logs every no-show, decline, no-response. Used by feedback loop."
+  }
+]

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smart Matching Center | CommitMatch</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#fcf9f8",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#d4e3ff",
+                        "on-surface-variant": "#5b403d",
+                        "on-tertiary-container": "#fff3e3",
+                        "on-primary-container": "#fff2f0",
+                        "on-tertiary-fixed-variant": "#5c4300",
+                        "surface-container-high": "#eae7e7",
+                        "tertiary": "#715300",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#001c3a",
+                        "on-tertiary-fixed": "#261a00",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#f8bd2a",
+                        "surface": "#fcf9f8",
+                        "surface-bright": "#fcf9f8",
+                        "surface-container": "#f0eded",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f3f0ef",
+                        "surface-variant": "#e5e2e1",
+                        "outline-variant": "#e4beba",
+                        "primary": "#af101a",
+                        "surface-dim": "#dcd9d9",
+                        "primary-fixed": "#ffdad6",
+                        "surface-tint": "#ba1a20",
+                        "on-surface": "#1b1b1c",
+                        "on-background": "#1b1b1c",
+                        "secondary": "#005faf",
+                        "tertiary-fixed": "#ffdfa0",
+                        "on-secondary-container": "#003567",
+                        "tertiary-container": "#8f6a00",
+                        "secondary-fixed-dim": "#a5c8ff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#ffb3ac",
+                        "surface-container-low": "#f6f3f2",
+                        "inverse-surface": "#303030",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#54a0fe",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#410003",
+                        "on-secondary-fixed-variant": "#004786",
+                        "outline": "#8f6f6c",
+                        "inverse-primary": "#ffb3ac",
+                        "primary-container": "#d32f2f",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-primary-fixed-variant": "#930010"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "32px",
+                        "sm": "8px",
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "xl": "40px",
+                        "md": "16px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "code": ["jetbrainsMono"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "14px", "fontWeight": "500"}],
+                        "code": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="flex flex-col h-full p-md bg-inverse-surface dark:bg-surface-container-lowest text-primary-fixed dark:text-primary docked left-0 h-screen w-64 shadow-md z-20">
+<div class="mb-xl px-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">bloodtype</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-on-primary-fixed font-black">CommitMatch</h1>
+<p class="font-label-sm text-label-sm opacity-70">Blood Warriors</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-base">
+<a class="flex items-center gap-md p-md text-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/10 transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Executive Overview</span>
+</a>
+<!-- Active Item -->
+<a class="flex items-center gap-md p-md bg-primary dark:bg-primary-container text-on-primary dark:text-on-primary-container rounded-lg scale-95 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
+<span class="font-label-md text-label-md">Smart Matching Center</span>
+</a>
+<a class="flex items-center gap-md p-md text-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/10 transition-all" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Donor Intelligence</span>
+</a>
+<a class="flex items-center gap-md p-md text-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/10 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-white/10 pt-md space-y-base">
+<button class="w-full flex items-center gap-md p-md bg-primary text-white font-bold rounded-lg mb-md">
+<span class="material-symbols-outlined">priority_high</span>
+<span class="font-label-md text-label-md">Urgent Request</span>
+</button>
+<a class="flex items-center gap-md p-md text-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/10 transition-all" href="#">
+<span class="material-symbols-outlined">check_circle</span>
+<span class="font-label-md text-label-md">System Status</span>
+</a>
+<a class="flex items-center gap-md p-md text-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/10 transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col h-full overflow-hidden">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-16 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline docked full-width top-0 z-10">
+<div class="flex items-center gap-lg">
+<div class="relative w-96">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none" placeholder="Search donors or requests..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-full relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-sm">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">Dr. Sarah Chen</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Lead Coordinator</p>
+</div>
+<img alt="Coordinator Profile" class="w-10 h-10 rounded-full border border-outline-variant" data-alt="A professional headshot of a female Asian medical professional in her late 30s wearing a clean white lab coat and a stethoscope. She has a confident yet warm expression, set against a blurred modern hospital laboratory background with soft bokeh lighting. The overall visual style is corporate, clean, and high-trust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2jD_2Vm6KExKwFfj-pMTVEStLJ1wfBNV0fJiAPACWPqyw1ey2Z7sa34F0U5l8kuIMQc2QVHF5A_imNr8j8E0Qekitz5T3c_SB_RA2aVEQx4rHk_58YqiFYAbJrF261RvbFQJ0m50zfz1IKmUoeR1XZNKqgedV4iVJmG5piPrsFojKuce7goLRRoomPXxwPXIr-7lCxhVvLxgmUsPKHPtVXmzWTFZCto9eODKW7K7VJSygGnbKPFHPsadjR2eIxGWeuIxEXADVPJU"/>
+</div>
+</div>
+</header>
+<!-- Workspace Scrollable Area -->
+<div class="flex-1 flex overflow-hidden p-lg gap-lg">
+<!-- Left Section: Workflow & Recommendations -->
+<div class="flex-1 flex flex-col gap-lg overflow-y-auto pr-2">
+<!-- Active Patient Request Header -->
+<div class="bg-primary text-white p-lg rounded-xl shadow-lg border border-primary-container relative overflow-hidden shrink-0">
+<!-- Decorative Pattern -->
+<div class="absolute right-0 top-0 opacity-10 pointer-events-none">
+<span class="material-symbols-outlined text-[120px]">emergency</span>
+</div>
+<div class="flex justify-between items-start relative z-10">
+<div class="space-y-sm">
+<div class="flex items-center gap-sm">
+<span class="bg-white/20 px-2 py-0.5 rounded text-label-sm font-bold uppercase tracking-wider">Active Request</span>
+<span class="text-white/80 font-code text-code">#TR-8821</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg">Patient: Elena Rodriguez</h2>
+<div class="flex items-center gap-xl mt-md">
+<div class="flex flex-col">
+<span class="text-white/70 font-label-sm uppercase">Blood Type</span>
+<span class="font-headline-md text-headline-md font-bold">O Positive</span>
+</div>
+<div class="h-10 w-[1px] bg-white/30"></div>
+<div class="flex flex-col">
+<span class="text-white/70 font-label-sm uppercase">Priority</span>
+<div class="flex items-center gap-xs text-secondary-fixed font-bold">
+<span class="material-symbols-outlined text-md">bolt</span>
+<span>URGENT</span>
+</div>
+</div>
+<div class="h-10 w-[1px] bg-white/30"></div>
+<div class="flex flex-col">
+<span class="text-white/70 font-label-sm uppercase">Units Req.</span>
+<span class="font-headline-md text-headline-md font-bold">4 Units</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<p class="text-white/80 font-label-sm">Time Elapsed</p>
+<p class="font-code text-headline-md font-bold">02:44:12</p>
+<p class="text-white/70 text-body-sm mt-1">St. Mary's Medical Center</p>
+</div>
+</div>
+</div>
+<!-- Ranked Recommendations Grid -->
+<div class="space-y-md">
+<div class="flex justify-between items-center px-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface">Top Recommended Donors</h3>
+<div class="flex items-center gap-sm">
+<span class="font-label-sm text-on-surface-variant">Sort by:</span>
+<select class="bg-transparent border-none text-primary font-bold text-label-md focus:ring-0 cursor-pointer">
+<option>Match Score</option>
+<option>Proximity</option>
+<option>Reliability</option>
+</select>
+</div>
+</div>
+<!-- Grid/List of Cards -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-md">
+<!-- Donor Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl hover:border-primary transition-all duration-200 group">
+<div class="flex gap-md">
+<div class="relative">
+<img alt="Arjun Mehta" class="w-16 h-16 rounded-lg object-cover" data-alt="A close-up portrait of Arjun Mehta, a friendly-looking South Asian man in his early 30s. He is wearing a casual blue denim shirt and has a warm, helpful smile. The background is a brightly lit, clean urban environment with hints of green trees, conveying a sense of reliability and community. High-contrast, sharp focus, professional photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8U2_DlCIglU9sTo8hmBQ13usR3kKj9y2PnPg0mTCpbW9JfS7rhhpI7lpzDrV4vlS9uWkCh2cFv74qjAV0iPVeQ9rhHe2de34zUUhzjHW9i6x32p6WgwDT5aIyJz23qz-2Ix-kDs7V9J_WYa8HT9Vr_CoVXyi-jXWmFwt31HZgC9i1drCLCbmOrOMc71b1h7OyzG894srHcbA-KkX2nN8_OgVp_oEo_BXYHyZn9yZXia-JTExj23DgmTo7YxDpZoeOGT_9YkFb72w"/>
+<div class="absolute -top-2 -right-2 bg-secondary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">TOP</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-md text-on-surface font-bold">Arjun Mehta</h4>
+<p class="text-on-surface-variant text-body-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">location_on</span> 2.1 km away • Bandra West
+                                                </p>
+</div>
+<div class="text-right">
+<div class="text-primary font-black text-headline-md">98%</div>
+<div class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter">Match Score</div>
+</div>
+</div>
+<div class="mt-md p-sm bg-surface-container-low rounded-lg border border-outline-variant/50">
+<p class="text-body-sm text-on-surface leading-snug">
+<span class="material-symbols-outlined text-[14px] text-secondary align-middle mr-1" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-bold text-secondary">AI Reason:</span> 100% reliability for O+ donations. Last donation 4 months ago.
+                                            </p>
+</div>
+<div class="mt-md flex gap-sm">
+<button class="flex-1 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary-container transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-md">call</span> Call
+                                            </button>
+<button class="flex-1 py-2 border border-outline text-on-surface font-bold rounded-lg hover:bg-surface-variant/20 transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-md">message</span> Message
+                                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Donor Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl hover:border-primary transition-all duration-200">
+<div class="flex gap-md">
+<img alt="Sarah Lopez" class="w-16 h-16 rounded-lg object-cover" data-alt="A professional portrait of Sarah Lopez, a Hispanic woman in her late 20s with glasses and a friendly, sincere expression. She is in a well-lit office setting with soft shadows. The visual tone is trustworthy, efficient, and modern. Sharp details and vibrant yet natural colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD1ZS7qW4Ul0Z1n0sspATTqBfwKKCVD8yEckdqUD3-sNbfKFZE_sIXxhUr-U8jnnyhsG-qOq72zmNnpKM1Srxdxh-_mYFIsHw_sVxwic6V8iSkktK-Z6ao3-YcwYbKWvjvDxP1PS4Uvatd3UvUCEmdynXawP4QmNooRUdbn49GcgBDGBffgX5OWRMBNbZbUHhpN3mF1nCCKSwFJOc0xhdceA9g2QlPAijf_1B4WKMpqm51zUMOk7Vy4b47S5yMLb_9nfNYmUv7WtM"/>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-md text-on-surface font-bold">Sarah Lopez</h4>
+<p class="text-on-surface-variant text-body-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">location_on</span> 4.5 km away • Juhu
+                                                </p>
+</div>
+<div class="text-right">
+<div class="text-primary font-black text-headline-md">94%</div>
+<div class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter">Match Score</div>
+</div>
+</div>
+<div class="mt-md p-sm bg-surface-container-low rounded-lg border border-outline-variant/50">
+<p class="text-body-sm text-on-surface leading-snug">
+<span class="material-symbols-outlined text-[14px] text-secondary align-middle mr-1" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-bold text-secondary">AI Reason:</span> Immediate availability confirmed via app heart-beat. Proactive donor.
+                                            </p>
+</div>
+<div class="mt-md flex gap-sm">
+<button class="flex-1 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary-container transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-md">call</span> Call
+                                            </button>
+<button class="flex-1 py-2 border border-outline text-on-surface font-bold rounded-lg hover:bg-surface-variant/20 transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-md">message</span> Message
+                                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Donor Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl hover:border-primary transition-all duration-200">
+<div class="flex gap-md">
+<img alt="David Kim" class="w-16 h-16 rounded-lg object-cover" data-alt="A studio portrait of David Kim, an East Asian male in his 40s. He has a calm and responsible demeanor. He is wearing a dark grey polo shirt. The lighting is crisp and professional, against a neutral light grey background that emphasizes the corporate and clean aesthetic of the CommitMatch platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUehTZKmJzf13R-2NRGcD8s2AhevrsIW16kKku1qU6PJlGBMmYANDy-8Y_gaHqekGTmjg8E7hiM30iK67eFucdzuyn-awMFfazIjwQ9xTndK3Fb-r6oFvQ6JyXD89ftMOREt-ZWfUVDTzaNBe54ZIm4R4s-hPBp9r8dKqDYyPQ060PyIbFTQ4yIoUcZ8i7jNw9wF12EYwyeb8yVmnRsYp43eKSa6r1JeNDz9XEcy5FlwNQiOsoN_fGjBfQzSFlFOpWGuSootUK_7I"/>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-md text-on-surface font-bold">David Kim</h4>
+<p class="text-on-surface-variant text-body-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">location_on</span> 5.2 km away • Worli
+                                                </p>
+</div>
+<div class="text-right">
+<div class="text-primary font-black text-headline-md">89%</div>
+<div class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter">Match Score</div>
+</div>
+</div>
+<div class="mt-md p-sm bg-surface-container-low rounded-lg border border-outline-variant/50">
+<p class="text-body-sm text-on-surface leading-snug">
+<span class="material-symbols-outlined text-[14px] text-secondary align-middle mr-1" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-bold text-secondary">AI Reason:</span> Frequent O+ donor with high platelet count recorded in June.
+                                            </p>
+</div>
+<div class="mt-md flex gap-sm">
+<button class="flex-1 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary-container transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-md">call</span> Call
+                                            </button>
+<button class="flex-1 py-2 border border-outline text-on-surface font-bold rounded-lg hover:bg-surface-variant/20 transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-md">message</span> Message
+                                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Donor Card 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl hover:border-primary transition-all duration-200">
+<div class="flex gap-md">
+<img alt="Fatima Wahid" class="w-16 h-16 rounded-lg object-cover" data-alt="A portrait of Fatima Wahid, a Middle Eastern woman wearing a stylish hijab, with a confident and kind expression. The background is a bright, airy indoor space with floor-to-ceiling windows. The image uses soft, natural light, reflecting the compassionate and professional nature of the blood donation platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1DtTxJOr9_erx-qnJvOPVgShV_OznqFRB8MX6wKjLFY4mH_ICLDgQIRPWDSx07_T-RmhqlzCArzI5BuOSwDyCZrRsZYkleFy5gKLrxT_511KhHC4kEYMjQ06EaXcu8w3gBHbh2VZhCsrmINu9nC5d_vvrIGwW7nWnxeRZSTdmlrNrENr0guYUoP2RIWX-ZHUcbj9L41_ndquIyIRbmOH7e9CZygcsgiSXSY4nsDv8Xi6nDJELD8nxE09ZMZ9IQLtx-PgalqXfO6g"/>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-md text-on-surface font-bold">Fatima Wahid</h4>
+<p class="text-on-surface-variant text-body-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">location_on</span> 8.7 km away • Malad
+                                                </p>
+</div>
+<div class="text-right">
+<div class="text-primary font-black text-headline-md">82%</div>
+<div class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tighter">Match Score</div>
+</div>
+</div>
+<div class="mt-md p-sm bg-surface-container-low rounded-lg border border-outline-variant/50">
+<p class="text-body-sm text-on-surface leading-snug">
+<span class="material-symbols-outlined text-[14px] text-secondary align-middle mr-1" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-bold text-secondary">AI Reason:</span> Stable donor history. Recommended for second-wave outreach.
+                                            </p>
+</div>
+<div class="mt-md flex gap-sm">
+<button class="flex-1 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary-container transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-md">call</span> Call
+                                            </button>
+<button class="flex-1 py-2 border border-outline text-on-surface font-bold rounded-lg hover:bg-surface-variant/20 transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-md">message</span> Message
+                                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Sidebar: AI Insights & Logic -->
+<aside class="w-80 flex flex-col gap-lg">
+<!-- AI Insight Panel -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-lg flex flex-col gap-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<h3 class="font-label-md text-label-md uppercase tracking-widest text-on-surface">AI Matching Logic</h3>
+</div>
+<p class="text-body-sm text-on-surface-variant leading-relaxed">
+                            Our proprietary <span class="font-bold text-primary">CommitMatch Score</span> is calculated using 42 data points. Here is why these donors were selected:
+                        </p>
+<div class="space-y-md mt-sm">
+<div class="flex gap-md">
+<div class="w-1.5 h-auto bg-secondary rounded-full"></div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Recency Factor</h4>
+<p class="text-body-sm text-on-surface-variant">Donors with &gt;90 days since last donation are prioritized for medical safety.</p>
+</div>
+</div>
+<div class="flex gap-md">
+<div class="w-1.5 h-auto bg-secondary rounded-full"></div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Travel Threshold</h4>
+<p class="text-body-sm text-on-surface-variant">Donors within 5km are weighted 3x higher for urgent requests.</p>
+</div>
+</div>
+<div class="flex gap-md">
+<div class="w-1.5 h-auto bg-secondary rounded-full"></div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Historical Commitment</h4>
+<p class="text-body-sm text-on-surface-variant">Past "No-Shows" result in a 25% penalty to matching priority.</p>
+</div>
+</div>
+</div>
+<div class="mt-lg pt-lg border-t border-outline-variant">
+<div class="flex justify-between items-center mb-sm">
+<span class="text-label-sm font-bold uppercase text-on-surface-variant">Model Confidence</span>
+<span class="text-primary font-bold">High (96%)</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 96%"></div>
+</div>
+</div>
+</div>
+<!-- Statistics / Quick Metrics -->
+<div class="bg-inverse-surface text-white rounded-xl p-lg space-y-md">
+<h3 class="font-label-sm font-bold uppercase text-white/50">Current Fleet Status</h3>
+<div class="grid grid-cols-2 gap-md">
+<div class="p-sm bg-white/10 rounded-lg">
+<p class="text-white/70 text-[10px] font-bold">ACTIVE AMBULANCE</p>
+<p class="text-xl font-black">12</p>
+</div>
+<div class="p-sm bg-white/10 rounded-lg">
+<p class="text-white/70 text-[10px] font-bold">READY DONORS</p>
+<p class="text-xl font-black">448</p>
+</div>
+</div>
+<button class="w-full py-3 bg-secondary-container text-on-secondary-container font-black rounded-lg hover:opacity-90 transition-opacity">
+                            OPEN LIVE MAP
+                        </button>
+</div>
+</aside>
+</div>
+<!-- Footer -->
+<footer class="flex justify-between items-center w-full px-margin-desktop py-md bg-surface-container dark:bg-surface-container-lowest border-t border-outline-variant docked full-width bottom-0 overflow-hidden shrink-0">
+<div class="flex items-center gap-xl">
+<span class="font-label-md text-label-md font-bold text-on-surface">CommitMatch</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">© 2024 CommitMatch Blood Warriors Platform</p>
+</div>
+<div class="flex items-center gap-lg">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Security Center</a>
+<div class="flex items-center gap-xs text-primary font-bold">
+<span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+<span class="font-label-sm text-label-sm">System Status: Operational</span>
+</div>
+</div>
+</footer>
+</main>
+</div>
+<!-- Micro-interaction for urgent alert pulse -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urgentBtn = document.querySelector('button.bg-primary');
+            if (urgentBtn) {
+                setInterval(() => {
+                    urgentBtn.classList.add('ring-4', 'ring-primary/20');
+                    setTimeout(() => {
+                        urgentBtn.classList.remove('ring-4', 'ring-primary/20');
+                    }, 1000);
+                }, 3000);
+            }
+        });
+    </script>
+</body></html>
