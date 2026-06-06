@@ -86,6 +86,17 @@ def record_hesitation(donor_id: str, request_id: str) -> None:
     logger.info("Feedback [hesitation] donor=%s request=%s", donor_id, request_id)
 
 
+def get_memory_reliability_boost_from_mem(mem: dict) -> float:
+    """Compute boost from a pre-fetched memory dict — no DB call."""
+    show_rate = mem.get("lifetime_show_rate")
+    if show_rate is None: return 1.0
+    if show_rate >= 0.85: return 1.2
+    if show_rate >= 0.7:  return 1.1
+    if show_rate >= 0.5:  return 1.0
+    if show_rate >= 0.3:  return 0.85
+    return 0.7
+
+
 def get_memory_reliability_boost(donor_id: str) -> float:
     """
     Returns a multiplier (0.5–1.2) based on historical show-rate.

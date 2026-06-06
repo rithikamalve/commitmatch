@@ -26,6 +26,30 @@ def get_dynamic_reliability_penalty(donor_id: str) -> float:
     return 1.0
 
 
+def get_donor_context_from_memory(donor_id: str, mem: dict) -> dict:
+    """Build context from a pre-fetched memory dict — no DB call."""
+    show_rate = mem.get("lifetime_show_rate")
+    ctx = {
+        "donor_id":                  donor_id,
+        "show_rate":                 show_rate,
+        "show_rate_label":           _label(show_rate),
+        "last_outcome":              mem.get("last_outcome"),
+        "total_confirmations":       mem.get("total_confirmations", 0),
+        "total_declines":            mem.get("total_declines", 0),
+        "total_no_responses":        mem.get("total_no_responses", 0),
+        "preferred_language":        mem.get("preferred_language", "Hindi"),
+        "best_contact_time":         mem.get("best_contact_time", "unknown"),
+        "notes":                     mem.get("notes", []),
+        "is_first_contact":          mem.get("total_requests_sent", 0) == 0,
+        "is_reliable":               show_rate is not None and show_rate >= 0.7,
+        "is_at_risk":                show_rate is not None and show_rate < 0.3,
+        "last_donation_date_actual": mem.get("last_donation_date_actual"),
+        "actual_donations":          mem.get("actual_donations", 0),
+    }
+    ctx["memory_summary"] = _summarize(ctx)
+    return ctx
+
+
 def get_donor_context(donor_id: str) -> dict:
     """
     Returns a rich context dict for a donor, combining static profile

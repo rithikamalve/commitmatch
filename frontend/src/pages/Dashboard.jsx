@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { MapContainer, TileLayer, CircleMarker, Tooltip, Popup } from 'react-leaflet'
 import { api } from '../lib/api'
 import { subscribeWS } from '../lib/websocket'
 
@@ -12,11 +13,6 @@ const BG_COLORS = {
   'AB Negative':'bg-orange-700','AB Positive':'bg-orange-500',
 }
 
-const SEVERITY_RING = {
-  critical: 'border-2 border-error shadow-lg shadow-error/20',
-  medium:   'border border-amber',
-  low:      'border border-success/50',
-}
 
 function daysUntil(d) {
   if (!d) return null
@@ -80,11 +76,16 @@ function NewMatchModal({ patients, onClose, onMatch }) {
             <select value={patientId} onChange={e => setPatientId(e.target.value)}
               className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface focus:outline-none focus:border-primary">
               <option value="">Select patient…</option>
-              {patients.map(p => (
-                <option key={p.bridge_id} value={p.bridge_id}>
-                  {p.bridge_blood_group} — {p.bridge_id.slice(-8)}
-                </option>
-              ))}
+              {[...patients]
+                .sort((a, b) => {
+                  const rarity = ['AB Negative','O Negative','AB Positive','B Negative','A Negative','O Positive','B Positive','A Positive']
+                  return (rarity.indexOf(a.bridge_blood_group) + 1 || 99) - (rarity.indexOf(b.bridge_blood_group) + 1 || 99)
+                })
+                .map(p => (
+                  <option key={p.bridge_id} value={p.bridge_id}>
+                    {p.bridge_blood_group} — {p.bridge_id.slice(-8)}
+                  </option>
+                ))}
             </select>
           </div>
           <div>
@@ -110,73 +111,119 @@ function NewMatchModal({ patients, onClose, onMatch }) {
   )
 }
 
-// ── Regional Map Placeholder ──────────────────────────────────────────────────
+// ── Regional Map (Leaflet + OpenStreetMap) ─────────────────────────────────────
+
+const SEVERITY_COLOR = { critical: '#ef4444', medium: '#f59e0b', low: '#22c55e' }
+
+const HOSPITALS = [
+  { pos: [17.4128, 78.4069], name: 'NIMS Hospital',          shortageIdx: 0 },
+  { pos: [17.4416, 78.4982], name: 'Yashoda Secunderabad',   shortageIdx: 1 },
+  { pos: [17.4239, 78.4429], name: 'Care Hospitals',         shortageIdx: 2 },
+  { pos: [17.3850, 78.4867], name: 'Gandhi Hospital',        shortageIdx: -1 },
+  { pos: [17.4374, 78.4487], name: 'Apollo Jubilee Hills',   shortageIdx: -1 },
+]
+
+const DONOR_CLUSTERS = [
+  { pos: [17.4124, 78.4482], area: 'Banjara Hills',  count: 48 },
+  { pos: [17.4329, 78.4072], area: 'Jubilee Hills',  count: 35 },
+  { pos: [17.4344, 78.5013], area: 'Secunderabad',   count: 72 },
+  { pos: [17.4849, 78.4138], area: 'Kukatpally',     count: 54 },
+  { pos: [17.3474, 78.5527], area: 'LB Nagar',       count: 31 },
+  { pos: [17.5100, 78.3960], area: 'Bachupally',     count: 22 },
+  { pos: [17.3616, 78.4747], area: 'Mehdipatnam',    count: 19 },
+]
 
 function RegionalMap({ shortages, requests }) {
-  // Simulated hospital markers from real shortage data
-  const markers = [
-    { id: 'c1', x: '48%', y: '32%', severity: 'critical', label: 'NIMS Hospital',    sub: shortages[0]?.blood_group || 'O Negative', note: 'Critical shortage' },
-    { id: 'c2', x: '28%', y: '58%', severity: 'medium',   label: 'Yashoda Secunderabad', sub: shortages[1]?.blood_group || 'AB Negative', note: 'Moderate supply' },
-    { id: 'c3', x: '68%', y: '62%', severity: 'low',      label: 'Care Hospitals',   sub: 'B Positive', note: 'Stable supply' },
-  ]
-
   return (
-    <div className="relative flex-1 min-h-[420px] bg-[#0f1924] overflow-hidden rounded-b-xl">
-      {/* City grid overlay */}
-      <div className="absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
-        }}
-      />
-      {/* District blobs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute w-96 h-64 bg-[#1a2d45] rounded-full blur-3xl top-1/4 left-1/4 opacity-60" />
-        <div className="absolute w-72 h-48 bg-[#1a2d35] rounded-full blur-3xl bottom-1/4 right-1/4 opacity-40" />
-        <div className="absolute w-48 h-32 bg-[#2a1818] rounded-full blur-3xl top-[40%] left-[55%] opacity-50" />
-      </div>
+    <div className="relative overflow-hidden rounded-b-xl" style={{ height: 420 }}>
+      <MapContainer
+        center={[17.405, 78.475]}
+        zoom={12}
+        style={{ height: 420, width: '100%' }}
+        scrollWheelZoom={false}
+        zoomControl={false}
+      >
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; OSM &copy; CARTO'
+          subdomains="abcd"
+          maxZoom={19}
+        />
 
-      {/* Hospital markers */}
-      {markers.map(m => (
-        <div key={m.id} className="absolute" style={{ left: m.x, top: m.y, transform: 'translate(-50%,-50%)' }}>
-          {m.severity === 'critical' && (
-            <div className="absolute -inset-6 bg-error/20 rounded-full blur-xl animate-pulse-slow pointer-events-none" />
-          )}
-          <div className={`flex items-center gap-2 bg-[#1b1b1c]/90 backdrop-blur-sm px-3 py-2 rounded-lg cursor-pointer hover:scale-105 transition-transform ${SEVERITY_RING[m.severity]}`}>
-            <span className={`material-symbols-outlined text-[16px] ${m.severity === 'critical' ? 'text-error animate-pulse-slow' : m.severity === 'medium' ? 'text-amber' : 'text-success'}`}
-              style={{ fontVariationSettings: "'FILL' 1" }}>
-              {m.severity === 'critical' ? 'emergency' : 'local_hospital'}
-            </span>
-            <div>
-              <p className="text-[11px] font-bold text-white leading-tight">{m.label}</p>
-              <p className={`text-[10px] ${m.severity === 'critical' ? 'text-red-400' : m.severity === 'medium' ? 'text-amber' : 'text-green-400'}`}>{m.note} · {m.sub}</p>
-            </div>
-          </div>
-        </div>
-      ))}
+        {/* Donor cluster rings */}
+        {DONOR_CLUSTERS.map(c => (
+          <CircleMarker
+            key={c.area}
+            center={c.pos}
+            radius={Math.sqrt(c.count) * 1.8}
+            pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.18, weight: 1 }}
+          >
+            <Tooltip direction="top">
+              <strong>{c.area}</strong> — {c.count} donors
+            </Tooltip>
+          </CircleMarker>
+        ))}
+
+        {/* Hospital markers — outer glow ring + inner dot */}
+        {HOSPITALS.map(h => {
+          const s = shortages[h.shortageIdx] || null
+          const severity = s?.severity || (h.shortageIdx === -1 ? 'low' : 'medium')
+          const color = SEVERITY_COLOR[severity]
+          return (
+            <CircleMarker
+              key={h.name}
+              center={h.pos}
+              radius={severity === 'critical' ? 14 : 10}
+              pathOptions={{ color, fillColor: color, fillOpacity: 0.75, weight: 2 }}
+            >
+              <Tooltip direction="top" permanent={false}>
+                <div style={{ minWidth: 130 }}>
+                  <strong>{h.name}</strong><br />
+                  {s ? (
+                    <span>{s.blood_group} · <span style={{ color }}>{s.severity}</span> shortage</span>
+                  ) : (
+                    <span style={{ color: '#22c55e' }}>Supply stable</span>
+                  )}
+                </div>
+              </Tooltip>
+              <Popup>
+                <div style={{ fontSize: 12, lineHeight: 1.7, minWidth: 170 }}>
+                  <strong style={{ fontSize: 13 }}>{h.name}</strong><br />
+                  {s ? (
+                    <>Blood group: <strong>{s.blood_group}</strong><br />
+                    Severity: <strong style={{ color }}>{s.severity}</strong><br />
+                    Donors: {s.eligible_donor_count} · Patients: {s.active_patient_count}</>
+                  ) : (
+                    <span style={{ color: '#22c55e' }}>No active shortage</span>
+                  )}
+                </div>
+              </Popup>
+            </CircleMarker>
+          )
+        })}
+      </MapContainer>
 
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 flex flex-col gap-1.5">
+      <div className="absolute bottom-4 left-4 z-[1000] flex flex-col gap-1.5 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2.5 pointer-events-none">
         {[
-          { color: 'bg-error', label: 'Critical shortage' },
-          { color: 'bg-amber', label: 'Moderate demand' },
-          { color: 'bg-success', label: 'Stable supply' },
+          { color: '#ef4444', label: 'Critical shortage' },
+          { color: '#f59e0b', label: 'Moderate demand'  },
+          { color: '#22c55e', label: 'Stable supply'     },
+          { color: '#3b82f6', label: 'Donor cluster'     },
         ].map(l => (
           <div key={l.label} className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${l.color}`} />
-            <span className="text-[10px] text-white/50">{l.label}</span>
+            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: l.color }} />
+            <span className="text-[10px] text-white/60">{l.label}</span>
           </div>
         ))}
       </div>
 
-      {/* Map controls */}
-      <div className="absolute bottom-4 right-4 flex flex-col gap-1.5">
-        {['+', '−'].map(c => (
-          <button key={c} className="w-8 h-8 bg-[#1b1b1c]/90 border border-white/10 rounded text-white/70 hover:text-white text-sm font-bold flex items-center justify-center transition-colors">
-            {c}
-          </button>
-        ))}
-      </div>
+      {requests.length > 0 && (
+        <div className="absolute top-3 right-3 z-[1000] flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-error animate-pulse" />
+          <span className="text-[11px] font-semibold text-white">{requests.length} active request{requests.length !== 1 ? 's' : ''}</span>
+        </div>
+      )}
     </div>
   )
 }
@@ -212,7 +259,7 @@ export default function Dashboard({ onToast }) {
 
   useEffect(() => {
     const unsub = subscribeWS(event => {
-      if (['confirmed','declined','amber_alert','standby_promoted','shortage_alert'].includes(event.type))
+      if (['confirmed','declined','amber_alert','standby_promoted','shortage_alert','outreach_sent','standby_alerted'].includes(event.type))
         loadData()
     })
     return unsub
@@ -235,8 +282,10 @@ export default function Dashboard({ onToast }) {
   const activeCount   = health ? Math.round(health.total_donors * health.pct_active / 100) : 0
   const responseRate  = health ? health.pct_eligible : 0
 
-  // Milestones: recent requests formatted as activity items
+  // Milestones: sort amber → open → confirmed, then by recency
+  const urgencyRank = r => r.has_amber_alert ? 0 : r.status === 'open' ? 1 : 2
   const milestones = [...requests]
+    .sort((a, b) => urgencyRank(a) - urgencyRank(b) || (b.created_at || '').localeCompare(a.created_at || ''))
     .slice(0, 5)
     .map(r => ({
       id:        r.id,

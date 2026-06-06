@@ -2,16 +2,18 @@
 Donor Profile Enrichment — merges static CSV data with dynamic memory
 into a single unified profile dict used across the system.
 """
-from memory.retrieval import get_donor_context
+from memory.retrieval import get_donor_context, get_donor_context_from_memory
 
 
 def enrich_profile(donor: dict) -> dict:
     """
     Merges static donor data with live memory context.
-    Returns a new dict — does not mutate the input.
+    Uses pre-fetched _memory if the prioritizer already loaded it
+    (avoids a duplicate DDB round-trip for every top-ranked donor).
     """
-    uid = str(donor.get("user_id") or donor.get("donor_id") or "")
-    ctx = get_donor_context(uid)
+    uid     = str(donor.get("user_id") or donor.get("donor_id") or "")
+    pre_mem = donor.get("_memory")
+    ctx     = get_donor_context_from_memory(uid, pre_mem) if pre_mem is not None else get_donor_context(uid)
     profile = dict(donor)
 
     profile["memory"] = ctx

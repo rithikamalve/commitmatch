@@ -3,7 +3,7 @@ import time
 import logging
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Request, HTTPException
 
 import db
 import config
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/match", response_model=MatchResponse)
-async def create_match(body: MatchRequest, request: Request):
+async def create_match(body: MatchRequest, request: Request, background_tasks: BackgroundTasks):
     print(f"\n{'='*60}")
     print(f"[MATCH] ▶ New request — patient_id={body.patient_id}")
     dl = request.app.state.data_loader
@@ -68,76 +68,92 @@ async def create_match(body: MatchRequest, request: Request):
     print(f"[MATCH] ✓ Request saved in {int((time.monotonic()-t2)*1000)}ms — id={request_id[:8]}...")
     transition(request_id, "ranked", {"donor_count": len(ranked)})
 
-    print(f"[MATCH] Step 5: Persisting {len(ranked)} rankings to DB...")
+    print(f"[MATCH] Step 5: Persisting {len(ranked)} rankings to DB (batch)...")
     t3 = time.monotonic()
+    import uuid as _uuid
+    primary_ranking_id = str(_uuid.uuid4())   # pre-generate so we can update without a query
+    ranking_items = []
     for r in ranked:
-        db.put_item("rankings", {
-            "request_id":      request_id,
-            "donor_id":        r["donor_id"],
-            "rank":            r["rank"],
+        item = {
+            "request_id":       request_id,
+            "donor_id":         r["donor_id"],
+            "rank":             r["rank"],
             "commitment_score": r["score"],
             "signal_breakdown": json.dumps(r.get("signals", {})),
             "reasons":          r.get("reasons", []),
             "flags":            r.get("flags", []),
-            "is_primary":      r["is_primary"],
-            "is_standby":      r["is_standby"],
-            "outreach_status": "pending",
-        })
+            "is_primary":       r["is_primary"],
+            "is_standby":       r["is_standby"],
+            "outreach_status":  "pending",
+        }
+        if r["is_primary"]:
+            item["id"] = primary_ranking_id
+        ranking_items.append(item)
+    db.batch_write_items("rankings", ranking_items)
     print(f"[MATCH] ✓ Rankings saved in {int((time.monotonic()-t3)*1000)}ms")
 
     top      = ranked[0]
-    language = top.get("preferred_language", "Hindi")
-    print(f"[MATCH] Step 6: Generating outreach message (language={language}, DEMO_MODE={config.DEMO_MODE})...")
-    t4 = time.monotonic()
-    message  = generate_outreach_message(top, patient, language)
-    print(f"[MATCH] ✓ Outreach message ready in {int((time.monotonic()-t4)*1000)}ms")
-    print(f"[MATCH]   Preview: {message[:80]}...")
-    message_preview = message
-    outreach_status = "ready_to_send"
+    language = top.get("preferred_language", "Hinglish")
 
-    phone = top.get("phone_number") or config.DEMO_PHONE_1
-    if phone and config.DEMO_WHATSAPP:
-        print(f"[MATCH] Step 7: Sending WhatsApp to {phone} (demo={not top.get('phone_number')})...")
-        t5 = time.monotonic()
-        sent = send_whatsapp(
-            phone if phone.startswith("whatsapp:") else f"whatsapp:{phone}",
-            message,
-            donor_id=top["donor_id"],
-            request_id=request_id,
-        )
-        print(f"[MATCH] {'✓ WhatsApp sent' if sent else '✗ WhatsApp failed'} in {int((time.monotonic()-t5)*1000)}ms")
-        if sent:
-            outreach_status = "sent"
-            ranking_rows = db.query_by_field("rankings", "request_id", request_id)
-            for row in ranking_rows:
-                if row.get("donor_id") == top["donor_id"]:
-                    db.update_item("rankings", row["id"], {
-                        "outreach_status": "sent",
-                        "outreach_sent_at": datetime.now(timezone.utc).isoformat(),
-                    })
-                    break
-    else:
-        print(f"[MATCH] Step 7: Skipping WhatsApp (no phone in CSV, DEMO_PHONE_1={bool(config.DEMO_PHONE_1)}, DEMO_WHATSAPP={config.DEMO_WHATSAPP})")
-
-    transition(request_id, "outreach_sent", {"donor_id": top["donor_id"]})
-    transition(request_id, "awaiting_response")
+    # Steps 6-7 (Bedrock + WhatsApp) run in background — don't block the HTTP response
+    background_tasks.add_task(
+        _outreach_background,
+        top=top, patient=patient, language=language,
+        request_id=request_id, primary_ranking_id=primary_ranking_id,
+    )
 
     ranked_donors = [
-        _to_ranked_donor(r, outreach_status if r["rank"] == 1 else "pending")
+        _to_ranked_donor(r, "pending")
         for r in ranked
     ]
 
     total_ms = int((time.monotonic() - t0) * 1000)
-    print(f"[MATCH] ✓ DONE — total={total_ms}ms, request_id={request_id[:8]}..., outreach={outreach_status}")
+    print(f"[MATCH] ✓ DONE (rankings saved) — total={total_ms}ms, request_id={request_id[:8]}...")
+    print(f"[MATCH]   Outreach + WhatsApp running in background")
     print(f"{'='*60}\n")
 
     return MatchResponse(
         request_id=request_id,
         patient_id=body.patient_id,
         ranked_donors=ranked_donors,
-        message_preview=message_preview,
+        message_preview="",
         match_time_ms=match_time_ms,
     )
+
+
+def _outreach_background(top: dict, patient: dict, language: str,
+                          request_id: str, primary_ranking_id: str) -> None:
+    """Runs after HTTP response is sent — Bedrock call + WhatsApp don't block the UI."""
+    print(f"[BG] ▶ Outreach background starting for request {request_id[:8]}...")
+    t0 = time.monotonic()
+    message = generate_outreach_message(top, patient, language)
+    print(f"[BG] ✓ Outreach message ready in {int((time.monotonic()-t0)*1000)}ms — {message[:60]}...")
+
+    outreach_status = "ready_to_send"
+    phone = top.get("phone_number") or config.DEMO_PHONE_1
+    if phone and config.DEMO_WHATSAPP:
+        dest = phone if phone.startswith("whatsapp:") else f"whatsapp:{phone}"
+        sent = send_whatsapp(dest, message, donor_id=top["donor_id"], request_id=request_id)
+        print(f"[BG] {'✓ WhatsApp sent' if sent else '✗ WhatsApp failed'} → {dest}")
+        if sent:
+            outreach_status = "sent"
+            db.update_item("rankings", primary_ranking_id, {
+                "outreach_status":  "sent",
+                "outreach_sent_at": datetime.now(timezone.utc).isoformat(),
+            })
+    else:
+        print(f"[BG] WhatsApp skipped (DEMO_WHATSAPP={config.DEMO_WHATSAPP})")
+
+    transition(request_id, "outreach_sent", {"donor_id": top["donor_id"]})
+    transition(request_id, "awaiting_response")
+
+    push_event({
+        "type":       "outreach_sent",
+        "request_id": request_id,
+        "donor_id":   top["donor_id"],
+        "status":     outreach_status,
+    })
+    print(f"[BG] ✓ Done — total background time={int((time.monotonic()-t0)*1000)}ms")
 
 
 def _to_ranked_donor(r: dict, outreach_status: str) -> RankedDonor:
@@ -165,7 +181,7 @@ def _to_ranked_donor(r: dict, outreach_status: str) -> RankedDonor:
         frequency_in_days=r.get("frequency_in_days", 0),
         cycle_of_donations=r.get("cycle_of_donations", 0),
         user_donation_active_status=r.get("user_donation_active_status", ""),
-        preferred_language=r.get("preferred_language", "Hindi"),
+        preferred_language=r.get("preferred_language", "Hinglish"),
         lifetime_show_rate=r.get("lifetime_show_rate"),
         memory_summary=r.get("memory_summary", ""),
         donor_type=r.get("donor_type"),

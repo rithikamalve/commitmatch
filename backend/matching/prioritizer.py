@@ -172,8 +172,12 @@ def rank_donors_for_patient(
     results.sort(key=lambda x: x["score"], reverse=True)
     top = results[:top_n]
 
-    # Post-rank enrichment — DB calls only for the top_n donors, never all donors
-    from learning.feedback import get_memory_reliability_boost
+    # Batch fetch all memories in ONE DDB call instead of top_n sequential calls
+    from memory.store import batch_get_memory
+    from learning.feedback import get_memory_reliability_boost_from_mem
+
+    donor_ids = [item["donor_id"] for item in top]
+    memories  = batch_get_memory(donor_ids)
 
     for i, item in enumerate(top):
         item["rank"]       = i + 1
@@ -181,21 +185,25 @@ def rank_donors_for_patient(
         item["is_standby"] = i == 1
 
         donor_id = item["donor_id"]
+        mem      = memories.get(donor_id, {})
 
-        # Failure penalty: reduces score for repeat non-responders/decliners
+        # Failure penalty (sequential scan — small table, acceptable)
         penalty = get_dynamic_reliability_penalty(donor_id)
         if penalty < 1.0:
             item["score"] = round(item["score"] * penalty)
             item["failure_penalty"] = penalty
 
-        # Memory boost: increases score for historically reliable donors
-        boost = get_memory_reliability_boost(donor_id)
+        # Memory boost from pre-fetched memory — no extra DDB call
+        boost = get_memory_reliability_boost_from_mem(mem)
         if boost != 1.0:
             item["score"] = min(100, round(item["score"] * boost))
             item["memory_boost"] = boost
 
         dist = item.get("distance_km")
         item["est_travel_min"] = round(dist / 30 * 60) if dist else None
+
+        # Attach memory for enrich_profile to reuse — eliminates Step 3 DDB calls
+        item["_memory"] = mem
 
     # Re-sort after memory adjustments in case boost/penalty changed order
     top.sort(key=lambda x: x["score"], reverse=True)

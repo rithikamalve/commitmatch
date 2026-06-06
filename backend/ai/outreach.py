@@ -72,6 +72,11 @@ def _fallback_outreach(donor: dict, patient: dict, language: str) -> str:
             f"Namaste {name} ji, Blood Warriors ki taraf se {bg} blood ki zaroorat hai. "
             f"{trust_line} Kya aap donate kar sakte hain? Reply HAAN ya NAHI."
         ).strip()
+    if language.lower() == "hinglish":
+        return (
+            f"Bhai {name}, Blood Warriors ko abhi {bg} blood ki urgent zaroorat hai. "
+            f"{trust_line} Kya aap help kar sakte ho? Reply karo HAAN ya NAHI."
+        ).strip()
     return (
         f"Hello {name}, Blood Warriors urgently needs a {bg} blood donor. "
         f"{trust_line} Can you help? Reply YES or NO."
@@ -89,7 +94,7 @@ def _fallback_impact(donor: dict, patient_first_name: str, donation_date: str, c
 # ── Public API ─────────────────────────────────────────────────────────────────
 
 def generate_outreach_message(
-    donor: dict, patient: dict, language: str = "Hindi"
+    donor: dict, patient: dict, language: str = "Hinglish"
 ) -> str:
     """Personalised WhatsApp outreach. Uses donor memory for tone."""
     print(f"[OUTREACH] generate_outreach_message — DEMO_MODE={config.DEMO_MODE} DEMO_WHATSAPP={config.DEMO_WHATSAPP}")
@@ -101,8 +106,13 @@ def generate_outreach_message(
         name     = donor.get("donor_name") or donor.get("user_id", "Donor")
         bg       = patient.get("bridge_blood_group") or patient.get("blood_group", "")
         mem_note = donor.get("memory_summary", "")
+        lang_desc = (
+            "Hinglish (natural mix of Hindi and English written in Roman script, "
+            "like how Indians actually text — e.g. 'Bhai, urgent zaroorat hai, please help kar sakte ho?')"
+            if language.lower() == "hinglish" else language
+        )
         prompt = (
-            f"Write a WhatsApp message in {language} under 80 words.\n"
+            f"Write a WhatsApp message in {lang_desc} under 80 words.\n"
             f"Donor name: {name}\n"
             f"Blood type needed: {bg}\n"
             f"Donor history: {mem_note}\n"
@@ -147,7 +157,7 @@ def generate_impact_message(
 
     try:
         name     = donor.get("donor_name") or donor.get("user_id", "Donor")
-        language = donor.get("preferred_language", "Hindi")
+        language = donor.get("preferred_language", "Hinglish")
         prompt = (
             f"Write a 48-hour post-donation thank you WhatsApp message in {language} under 60 words.\n"
             f"Donor name: {name}\nDonation date: {donation_date}\n"

@@ -6,16 +6,22 @@ import MatchingCenter from './pages/MatchingCenter'
 import Analytics from './pages/Analytics'
 import DonorProfile from './pages/DonorProfile'
 import Donors from './pages/Donors'
+import CampaignEngine from './pages/CampaignEngine'
+import IncidentResponse from './pages/IncidentResponse'
+import LogisticsNetwork from './pages/LogisticsNetwork'
 import { subscribeWS } from './lib/websocket'
 
 function Sidebar({ onUrgentRequest }) {
   const location = useLocation()
 
   const nav = [
-    { to: '/',          match: ['/'],                icon: 'dashboard',      label: 'Executive Overview'    },
-    { to: '/matching',  match: ['/matching','/requests'], icon: 'clinical_notes', label: 'Smart Matching Center' },
-    { to: '/donors',    match: ['/donors'],          icon: 'groups',         label: 'Donor Intelligence'    },
-    { to: '/analytics', match: ['/analytics'],       icon: 'analytics',      label: 'Analytics'             },
+    { to: '/',           match: ['/'],                      icon: 'dashboard',      label: 'Executive Overview'    },
+    { to: '/matching',   match: ['/matching','/requests'],  icon: 'clinical_notes', label: 'Smart Matching Center' },
+    { to: '/donors',     match: ['/donors'],                icon: 'groups',         label: 'Donor Intelligence'    },
+    { to: '/analytics',  match: ['/analytics'],             icon: 'analytics',      label: 'Analytics'             },
+    { to: '/campaigns',  match: ['/campaigns'],             icon: 'campaign',       label: 'Awareness Engine'      },
+    { to: '/incidents',  match: ['/incidents'],             icon: 'emergency',      label: 'Incident Response'     },
+    { to: '/logistics',  match: ['/logistics'],             icon: 'local_shipping', label: 'Logistics Network'     },
   ]
 
   return (
@@ -35,7 +41,7 @@ function Sidebar({ onUrgentRequest }) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-2 space-y-0.5">
+      <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
         {nav.map(item => {
           const isActive = item.match.some(prefix =>
             prefix === '/' ? location.pathname === '/' : location.pathname.startsWith(prefix)
@@ -165,6 +171,9 @@ function AppShell({ addToast }) {
             <Route path="/analytics"     element={<Analytics />} />
             <Route path="/donors"        element={<Donors />} />
             <Route path="/donors/:id"    element={<DonorProfile />} />
+            <Route path="/campaigns"     element={<CampaignEngine />} />
+            <Route path="/incidents"     element={<IncidentResponse />} />
+            <Route path="/logistics"     element={<LogisticsNetwork />} />
           </Routes>
         </main>
       </div>

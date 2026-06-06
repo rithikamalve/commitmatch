@@ -197,6 +197,42 @@ def update_item(table: str, pk_value: str, updates: dict, pk: str = "id") -> Non
     _mem.update(table, pk_value, updates, pk)
 
 
+def batch_write_items(table: str, items: list[dict], pk: str = "id") -> list[str]:
+    """Write up to 25 items in one BatchWriteItem call. Returns list of PK values."""
+    import time
+    for item in items:
+        if not item.get(pk):
+            item[pk] = str(uuid.uuid4())
+        if not item.get("created_at"):
+            item["created_at"] = datetime.now(timezone.utc).isoformat()
+
+    pks = [str(item[pk]) for item in items]
+
+    if _use_real_ddb():
+        t0 = time.monotonic()
+        try:
+            table_name = f"commitmatch_{table}"
+            for i in range(0, len(items), 25):
+                batch = items[i:i + 25]
+                _ddb().batch_write_item(
+                    RequestItems={
+                        table_name: [
+                            {"PutRequest": {"Item": _ddb_safe(item)}}
+                            for item in batch
+                        ]
+                    }
+                )
+            print(f"[DDB] batch_write({table}, {len(items)} items) ✓ {int((time.monotonic()-t0)*1000)}ms")
+            return pks
+        except Exception as e:
+            print(f"[DDB] batch_write({table}) ✗ {type(e).__name__}: {e}")
+            logger.error("DynamoDB batch_write_item failed: %s", e)
+
+    for item in items:
+        _mem.put(table, item, pk)
+    return pks
+
+
 def delete_item(table: str, pk_value: str, pk: str = "id") -> None:
     if _use_real_ddb():
         try:

@@ -1,8 +1,6 @@
+import asyncio
 import json
 import logging
-
-import boto3
-from botocore.exceptions import ClientError
 
 import config
 
@@ -14,11 +12,11 @@ _mgmt_client = None
 def _get_mgmt_client():
     global _mgmt_client
     if _mgmt_client is None and config.WEBSOCKET_ENDPOINT:
-        # Management API uses https://, not wss://
+        import boto3
         endpoint = (
             config.WEBSOCKET_ENDPOINT
             .replace("wss://", "https://")
-            .replace("ws://", "http://")
+            .replace("ws://",  "http://")
         )
         _mgmt_client = boto3.client(
             "apigatewaymanagementapi",
@@ -29,15 +27,30 @@ def _get_mgmt_client():
 
 
 def push_event(event: dict, db=None) -> None:
-    print(f"[WS] push_event type={event.get('type')} DEMO_MODE={config.DEMO_MODE}")
+    print(f"[WS] push_event type={event.get('type')}")
+
+    # ── Local FastAPI WebSocket (works in dev/demo without API Gateway) ────────
+    from websocket.manager import manager
+    if manager.count > 0:
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                asyncio.ensure_future(manager.broadcast(event))
+            else:
+                loop.run_until_complete(manager.broadcast(event))
+            print(f"[WS] ✓ Broadcast to {manager.count} local connection(s)")
+            return
+        except Exception as e:
+            print(f"[WS] Local broadcast failed: {e}")
+
+    # ── API Gateway WebSocket (production / cloud deployment) ─────────────────
     if config.DEMO_MODE:
-        logger.info("WS push (demo): %s", json.dumps(event))
+        logger.debug("WS push (demo, no listeners): %s", event.get("type"))
         return
 
     client = _get_mgmt_client()
     if client is None:
-        print(f"[WS] ✗ No WebSocket client — WEBSOCKET_ENDPOINT not set")
-        logger.warning("WebSocket endpoint not configured — skipping push")
+        print(f"[WS] No WebSocket client (WEBSOCKET_ENDPOINT not set) — skipping push")
         return
 
     if db is None:
@@ -45,14 +58,14 @@ def push_event(event: dict, db=None) -> None:
         db = _db
 
     try:
+        from botocore.exceptions import ClientError
         connections = db.scan_table("ws_connections")
-        print(f"[WS] {len(connections)} active connection(s)")
+        print(f"[WS] {len(connections)} API Gateway connection(s)")
     except Exception as e:
-        print(f"[WS] ✗ Failed to fetch connections: {type(e).__name__}: {e}")
         logger.error("Failed to fetch WS connections: %s", e)
         return
 
-    data = json.dumps(event).encode()
+    data  = json.dumps(event).encode()
     stale = []
     for row in connections:
         cid = row.get("connection_id")

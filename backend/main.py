@@ -1,13 +1,13 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 import config
 import db as _db
 from data_loader import DataLoader
-from routers import analytics, donors, match, patients, requests, webhook
+from routers import analytics, copilot, donors, match, patients, requests, webhook
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -140,6 +140,19 @@ app.include_router(donors.router,    tags=["donors"])
 app.include_router(patients.router,  tags=["patients"])
 app.include_router(webhook.router,   tags=["webhook"])
 app.include_router(analytics.router, tags=["analytics"])
+app.include_router(copilot.router,   tags=["copilot"])
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """Local WebSocket endpoint — replaces API Gateway for dev/demo."""
+    from websocket.manager import manager
+    await manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()   # keeps connection alive; ignores client messages
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 
 @app.get("/health")

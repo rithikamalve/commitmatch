@@ -1,40 +1,38 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
-import ScoreBar from '../components/ScoreBar'
 
-const CONFIDENCE_STYLE = {
-  high:    'bg-green-50 text-green-700 border-green-200',
-  medium:  'bg-amber-50 text-amber-700 border-amber-200',
-  low:     'bg-red-50 text-red-600 border-red-200',
-  unknown: 'bg-gray-50 text-gray-500 border-gray-200',
+const BG_COLOR = {
+  'O Negative': '#b91c1c', 'O Positive': '#ef4444',
+  'A Negative': '#1d4ed8', 'A Positive': '#3b82f6',
+  'B Negative': '#7c3aed', 'B Positive': '#8b5cf6',
+  'AB Negative':'#c2410c', 'AB Positive':'#f97316',
 }
 
-const PRIORITY_LABELS = {
-  donate_now:   { label: 'Donate Now',    color: 'bg-green-500 text-white' },
-  window_soon:  { label: 'Window Soon',   color: 'bg-amber-500 text-white' },
-  not_ready:    { label: 'Not Ready Yet', color: 'bg-gray-200 text-gray-600' },
-  unknown:      { label: 'Unknown',       color: 'bg-gray-100 text-gray-500' },
+const OUTCOME_STYLE = {
+  confirmed:   { label: 'Last: Confirmed',   color: '#16a34a' },
+  declined:    { label: 'Last: Declined',    color: '#dc2626' },
+  no_response: { label: 'Last: No Response', color: '#9ca3af' },
+  hesitation:  { label: 'Last: Hesitated',  color: '#d97706' },
 }
 
-function EngagementBadge({ engagement }) {
-  if (!engagement) return null
-  const pl = PRIORITY_LABELS[engagement.priority_label] || PRIORITY_LABELS.unknown
+function StatBox({ value, label, accent }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${pl.color}`}>
-        {pl.label}
+    <div className="flex flex-col items-center justify-center bg-white border border-outline-variant rounded-xl py-4 px-3 text-center">
+      <span className="text-3xl font-black tabular-nums" style={{ color: accent || '#1c1b1f' }}>
+        {value ?? '—'}
       </span>
-      {engagement.days_until_window !== null && engagement.days_until_window !== undefined && (
-        <span className="text-xs text-on-surface-variant">
-          {engagement.days_until_window >= 0
-            ? `next window in ${engagement.days_until_window} day(s)`
-            : `window opened ${Math.abs(engagement.days_until_window)}d ago`}
-        </span>
-      )}
-      <span className={`text-xs border px-2 py-1 rounded-full ${CONFIDENCE_STYLE[engagement.confidence] || CONFIDENCE_STYLE.unknown}`}>
-        {engagement.confidence} confidence
-      </span>
+      <span className="text-[11px] text-on-surface-variant font-semibold uppercase tracking-wide mt-1">{label}</span>
+    </div>
+  )
+}
+
+function Field({ label, value }) {
+  if (!value) return null
+  return (
+    <div className="flex justify-between items-center py-2.5 border-b border-outline-variant/40 last:border-0">
+      <span className="text-xs text-on-surface-variant font-medium">{label}</span>
+      <span className="text-sm font-semibold text-on-surface">{value}</span>
     </div>
   )
 }
@@ -42,138 +40,128 @@ function EngagementBadge({ engagement }) {
 export default function DonorProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [data, setData] = useState(null)
+  const [data, setData]     = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError]   = useState(null)
 
   useEffect(() => {
-    api.getDonorScore(id)
+    api.getDonor(id)
       .then(setData)
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
   }, [id])
 
-  if (loading) return <div className="p-6 text-sm text-on-surface-variant">Loading…</div>
-  if (error)   return <div className="p-6 text-sm text-danger">{error}</div>
-  if (!data)   return null
+  if (loading) return (
+    <div className="flex items-center justify-center h-48 text-sm text-on-surface-variant gap-2">
+      <span className="material-symbols-outlined animate-pulse">sync</span> Loading…
+    </div>
+  )
+  if (error) return (
+    <div className="p-6 text-sm text-red-600">
+      <span className="material-symbols-outlined align-middle mr-1">error</span>{error}
+    </div>
+  )
+  if (!data) return (
+    <div className="p-6 text-sm text-on-surface-variant">Donor not found.</div>
+  )
 
-  const { commitment_score, confidence, signals, reasons, flags, engagement,
-          blood_group, eligibility_status, total_donations,
-          lifetime_show_rate, memory_summary } = data
-
-  const scoreColor = commitment_score >= 92 ? 'text-green-600' :
-                     commitment_score >= 80 ? 'text-amber-600' : 'text-red-500'
+  const bgColor   = BG_COLOR[data.blood_group] || '#6b7280'
+  const isEligible = data.eligibility_status?.toLowerCase().includes('eligible') &&
+                     !data.eligibility_status?.toLowerCase().includes('ineligible')
+  const showRate  = data.lifetime_show_rate != null
+    ? `${(data.lifetime_show_rate * 100).toFixed(0)}%` : null
+  const outcome   = OUTCOME_STYLE[data.last_outcome]
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-5">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-on-surface-variant hover:text-on-surface">
+    <div className="p-6 max-w-lg mx-auto space-y-4">
+      <button onClick={() => navigate(-1)}
+        className="flex items-center gap-1 text-sm text-on-surface-variant hover:text-on-surface transition-colors">
         <span className="material-symbols-outlined text-[16px]">arrow_back</span>
         Back
       </button>
 
-      {/* Header */}
-      <div className="bg-white border border-outline-variant/50 rounded-2xl p-5">
-        <div className="flex items-start justify-between gap-4">
+      {/* ID Card */}
+      <div className="rounded-2xl overflow-hidden shadow-lg border border-outline-variant">
+
+        {/* Card header — blood group banner */}
+        <div className="px-6 py-5 flex items-center justify-between" style={{ backgroundColor: bgColor }}>
           <div>
-            <p className="text-xs text-on-surface-variant uppercase tracking-wide font-semibold">Donor ID</p>
-            <p className="text-base font-bold font-mono text-on-surface mt-0.5">{id}</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {blood_group && (
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
-                  {blood_group}
-                </span>
-              )}
-              {eligibility_status && (
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full
-                  ${eligibility_status.toLowerCase().includes('eligible') && !eligibility_status.toLowerCase().includes('in')
-                    ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                  {eligibility_status}
-                </span>
-              )}
-              <span className="text-xs px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant">
-                {total_donations} donation{total_donations !== 1 ? 's' : ''}
-              </span>
-              {lifetime_show_rate !== null && lifetime_show_rate !== undefined && (
-                <span className="text-xs px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant">
-                  {(lifetime_show_rate * 100).toFixed(0)}% historical show rate
-                </span>
-              )}
-            </div>
+            <p className="text-white/70 text-[10px] font-bold uppercase tracking-widest mb-0.5">Blood Warriors</p>
+            <p className="text-white text-4xl font-black tracking-tight">{data.blood_group || '?'}</p>
+            <p className="text-white/80 text-xs mt-1 font-medium">Verified Donor</p>
           </div>
-          <div className="text-right">
-            <span className={`text-5xl font-black tabular-nums ${scoreColor}`}>
-              {commitment_score}
+          <div className="flex flex-col items-end gap-2">
+            <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+              isEligible ? 'bg-white/20 text-white' : 'bg-black/30 text-white/70'
+            }`}>
+              {isEligible ? '✓ Eligible' : '✗ Ineligible'}
             </span>
-            <p className={`text-xs font-semibold mt-1 ${CONFIDENCE_STYLE[confidence]?.split(' ')[1] || 'text-gray-500'}`}>
-              {confidence} confidence
-            </p>
+            {data.user_donation_active_status && (
+              <span className="text-white/60 text-[10px] font-semibold uppercase">
+                {data.user_donation_active_status}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Memory summary */}
-        {memory_summary && (
-          <div className="mt-3 text-xs text-on-surface-variant bg-surface-container rounded-lg px-3 py-2">
-            <span className="material-symbols-outlined text-[12px] align-middle mr-1 text-secondary">history</span>
-            {memory_summary}
+        {/* Card body */}
+        <div className="bg-white px-6 py-4 space-y-0">
+
+          {/* Donor ID */}
+          <div className="py-3 border-b border-outline-variant/40">
+            <p className="text-[10px] text-on-surface-variant font-semibold uppercase tracking-wider">Donor ID</p>
+            <p className="font-mono text-sm font-bold text-on-surface mt-0.5 break-all">{id}</p>
           </div>
-        )}
 
-        {/* Engagement assessment */}
-        <div className="mt-3">
-          <p className="text-xs text-on-surface-variant uppercase tracking-wide font-semibold mb-2">
-            Prioritization Window
-          </p>
-          <EngagementBadge engagement={engagement} />
-          {engagement?.reasoning && (
-            <p className="text-xs text-on-surface-variant mt-1">{engagement.reasoning}</p>
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-3 py-4">
+            <StatBox value={data.total_donations} label="Donations" accent={bgColor} />
+            <StatBox value={showRate} label="Show Rate" accent={showRate ? (parseFloat(showRate) >= 70 ? '#16a34a' : '#d97706') : undefined} />
+            <StatBox
+              value={data.total_confirmations > 0 ? data.total_confirmations : null}
+              label="Confirmed"
+              accent="#16a34a"
+            />
+          </div>
+
+          {/* Details */}
+          <div className="border-t border-outline-variant/40 pt-1">
+            <Field label="Last Donation"   value={data.last_donation_date} />
+            <Field label="Next Eligible"   value={data.next_eligible_date} />
+            <Field label="Donation Cycle"  value={data.frequency_in_days ? `Every ${data.frequency_in_days} days` : null} />
+            <Field label="Donor Type"      value={data.donor_type} />
+            <Field label="Role"            value={data.role} />
+            <Field label="Language"        value={data.preferred_language} />
+          </div>
+
+          {/* Memory footer */}
+          {(data.last_outcome || data.total_declines > 0 || data.total_no_responses > 0) && (
+            <div className="mt-2 pt-3 border-t border-outline-variant/40 flex items-center justify-between flex-wrap gap-2">
+              {outcome && (
+                <span className="text-[11px] font-semibold" style={{ color: outcome.color }}>
+                  {outcome.label}
+                </span>
+              )}
+              <div className="flex gap-3 text-[11px] text-on-surface-variant">
+                {data.total_declines > 0 && <span>{data.total_declines} declined</span>}
+                {data.total_no_responses > 0 && <span>{data.total_no_responses} no-response</span>}
+              </div>
+            </div>
           )}
         </div>
-      </div>
 
-      {/* Why selected: reasons + flags */}
-      {(reasons?.length > 0 || flags?.length > 0) && (
-        <div className="bg-white border border-outline-variant/50 rounded-2xl p-5">
-          <h2 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wide mb-3">
-            Why This Donor?
-          </h2>
-          {reasons?.length > 0 && (
-            <ul className="space-y-1.5 mb-3">
-              {reasons.map((r, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm">
-                  <span className="text-green-500 mt-0.5 shrink-0">✓</span>
-                  <span>{r}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {flags?.length > 0 && (
-            <>
-              <p className="text-xs font-semibold text-amber uppercase tracking-wide mb-1.5">Coordinator Notes</p>
-              <ul className="space-y-1.5">
-                {flags.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-on-surface-variant">
-                    <span className="text-amber mt-0.5 shrink-0">⚠</span>
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+        {/* Card footer */}
+        <div className="bg-surface-container-low px-6 py-3 flex items-center justify-between">
+          <span className="text-[10px] text-on-surface-variant">
+            {data.last_updated
+              ? `Updated ${new Date(data.last_updated).toLocaleDateString()}`
+              : 'No interactions yet'}
+          </span>
+          <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: bgColor }}>
+            <span className="material-symbols-outlined text-white text-[14px]"
+              style={{ fontVariationSettings: "'FILL' 1" }}>water_drop</span>
+          </div>
         </div>
-      )}
-
-      {/* Signal breakdown */}
-      <div className="bg-white border border-outline-variant/50 rounded-2xl p-5">
-        <h2 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wide mb-4">
-          Signal Breakdown
-        </h2>
-        <ScoreBar score={commitment_score} signals={signals} />
-      </div>
-
-      <div className="bg-surface-container rounded-xl p-4 text-xs text-on-surface-variant">
-        <span className="material-symbols-outlined text-[14px] align-middle mr-1">info</span>
-        Score is deterministic — 6 signals, no LLM. Every point is traceable to raw donor data.
-        Blood compatibility is a hard gate, not a scored signal. Memory-adjusted show rate updates after each resolved interaction.
       </div>
     </div>
   )

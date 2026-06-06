@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
 import { subscribeWS } from '../lib/websocket'
@@ -167,7 +167,7 @@ function SmartDonorCard({ donor, requestId, onConfirm }) {
             </button>
           )}
           <button
-            onClick={() => navigate(`/donors/${donor.donor_id}`)}
+            onClick={() => navigate(`/donors/${encodeURIComponent(donor.donor_id)}`)}
             className="flex-1 py-2 border border-outline-variant text-on-surface font-bold text-xs rounded-lg hover:bg-surface-container transition-colors flex items-center justify-center gap-1.5"
           >
             <span className="material-symbols-outlined text-[14px]">person</span>
@@ -200,6 +200,7 @@ export default function RequestDetail({ onToast }) {
   const [detail, setDetail]   = useState(null)
   const [loading, setLoading] = useState(true)
   const [elapsed, setElapsed] = useState(0)
+  const timerStarted = useRef(false)
 
   const loadDetail = useCallback(async () => {
     try {
@@ -221,9 +222,20 @@ export default function RequestDetail({ onToast }) {
     return unsub
   }, [id, loadDetail])
 
-  // Elapsed timer (demo cosmetic)
+  // Polling fallback — catches updates if WS message is missed
   useEffect(() => {
-    if (!detail) return
+    const interval = setInterval(loadDetail, 5000)
+    return () => clearInterval(interval)
+  }, [loadDetail])
+
+  // Elapsed timer — starts from request created_at, not page load
+  useEffect(() => {
+    if (!detail || timerStarted.current) return
+    timerStarted.current = true
+    const createdMs = detail.request?.created_at
+      ? new Date(detail.request.created_at).getTime()
+      : Date.now()
+    setElapsed(Math.max(0, Math.floor((Date.now() - createdMs) / 1000)))
     const t = setInterval(() => setElapsed(e => e + 1), 1000)
     return () => clearInterval(t)
   }, [detail])

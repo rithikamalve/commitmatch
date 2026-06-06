@@ -194,7 +194,7 @@ def _promote_standby(request_id: str, data_loader) -> None:
     print(f"[STANDBY]   Patient blood group: {patient_bg or '(unknown)'}")
 
     donor    = data_loader.get_donor_by_id(standby_donor_id)
-    language = (donor or {}).get("preferred_language", "Hindi") if donor else "Hindi"
+    language = (donor or {}).get("preferred_language", "Hinglish") if donor else "Hinglish"
     message  = generate_outreach_message(
         donor or {"donor_id": standby_donor_id, "donor_name": f"Donor #{standby_donor_id[:6]}"},
         {"bridge_blood_group": patient_bg},
@@ -266,7 +266,7 @@ def _alert_standby_amber(request_id: str, data_loader) -> None:
             patient_bg = p.get("bridge_blood_group", "")
 
     donor    = data_loader.get_donor_by_id(standby_donor_id)
-    language = (donor or {}).get("preferred_language", "Hindi") if donor else "Hindi"
+    language = (donor or {}).get("preferred_language", "Hinglish") if donor else "Hinglish"
     name     = f"Donor #{standby_donor_id[:6]}"
 
     if language.lower() == "hindi":
@@ -275,6 +275,13 @@ def _alert_standby_amber(request_id: str, data_loader) -> None:
             f"Hume {patient_bg} blood ki zaroorat pad sakti hai. "
             "Abhi koi confirm nahi hua hai — kya aap ready rehenge? "
             "Agar haan, toh READY reply karein."
+        )
+    elif language.lower() == "hinglish":
+        message = (
+            f"Bhai {name}, Blood Warriors ki taraf se — "
+            f"hume {patient_bg} blood donor ki zaroorat pad sakti hai thodi der mein. "
+            "Abhi commitment nahi chahiye, bas ready raho. "
+            "Reply karo READY agar available ho. 🙏"
         )
     else:
         message = (

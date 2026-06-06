@@ -41,6 +41,38 @@ def get_memory(donor_id: str) -> dict:
     return record
 
 
+def batch_get_memory(donor_ids: list[str]) -> dict[str, dict]:
+    """Fetch multiple donor memories in ONE DynamoDB BatchGetItem call."""
+    import time
+    valid = [d for d in donor_ids if d and d.strip()]
+    if not valid:
+        return {}
+
+    if not db._use_real_ddb():
+        return {did: db._mem.get(TABLE, did, pk="donor_id") or _empty(did) for did in valid}
+
+    t0 = time.monotonic()
+    try:
+        import boto3
+        import config
+        ddb  = boto3.resource("dynamodb", region_name=config.AWS_REGION)
+        resp = ddb.batch_get_item(
+            RequestItems={
+                f"commitmatch_{TABLE}": {"Keys": [{"donor_id": did} for did in valid]}
+            }
+        )
+        fetched = {
+            item["donor_id"]: item
+            for item in resp["Responses"].get(f"commitmatch_{TABLE}", [])
+        }
+        print(f"[DDB] batch_get_memory({len(valid)}) ✓ {int((time.monotonic()-t0)*1000)}ms — {len(fetched)} found")
+        return {did: fetched.get(did, _empty(did)) for did in valid}
+    except Exception as e:
+        print(f"[DDB] batch_get_memory ✗ {type(e).__name__}: {e} — falling back")
+        logger.warning("batch_get_memory failed, using sequential: %s", e)
+        return {did: get_memory(did) for did in valid}
+
+
 def record_outcome(
     donor_id:   str,
     request_id: str,
@@ -94,7 +126,7 @@ def _empty(donor_id: str) -> dict:
         "total_no_responses":  0,
         "total_hesitations":   0,
         "lifetime_show_rate":  None,
-        "preferred_language":  "Hindi",
+        "preferred_language":  "Hinglish",
         "best_contact_time":   "unknown",
         "last_outcome":        None,
         "last_request_id":     None,

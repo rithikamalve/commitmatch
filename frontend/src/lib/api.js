@@ -31,6 +31,7 @@ export const api = {
     const q = new URLSearchParams(params).toString()
     return request(`/donors${q ? '?' + q : ''}`)
   },
+  getDonor:      (id)         => request(`/donors/${encodeURIComponent(id)}`),
   getDonorScore: (id)         => request(`/donors/${id}/score`),
 
   // Patients
