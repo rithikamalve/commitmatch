@@ -105,8 +105,16 @@ async def lifespan(app: FastAPI):
             logger.info("DynamoDB tables verified")
         except Exception as e:
             logger.warning("DynamoDB setup skipped: %s", e)
+        # Seed demo data into DynamoDB on first deploy (skip if data already exists)
+        try:
+            existing = _db.scan_table("requests")
+            if not existing:
+                logger.info("DynamoDB requests table is empty — seeding initial data")
+                _auto_seed(app.state.data_loader)
+        except Exception as e:
+            logger.warning("DynamoDB seed check failed: %s", e)
     else:
-        logger.info("Demo mode: using in-memory DynamoDB substitute")
+        logger.info("Demo mode: using in-memory store")
         _auto_seed(app.state.data_loader)
 
     yield
