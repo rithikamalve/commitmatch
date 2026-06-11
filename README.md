@@ -144,7 +144,7 @@ DynamoDB (9 tables)          AWS EventBridge (3 scheduled jobs)
 
 - Python 3.12+
 - Node 18+
-- AWS credentials configured (`ap-south-1` region)
+- AWS credentials configured (`ap-east-1` region)
 - Twilio account with a WhatsApp-enabled number
 
 ### Backend
