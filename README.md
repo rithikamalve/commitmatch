@@ -17,6 +17,50 @@ Thalassemia patients need regular transfusions — often every 2–4 weeks. Find
 
 ---
 
+## How CommitMatch is different
+
+Most blood donation platforms are **directories** — donors register, patients wait, coordinators cold-call. CommitMatch is built around a different premise: the bottleneck isn't finding donors, it's predicting which donor will actually show up today.
+
+### vs. generic donor-registry apps (iDonate, Blood Connect, etc.)
+
+| | Typical registry app | CommitMatch |
+|---|---|---|
+| Matching | Blood type filter | Multi-signal commitment score |
+| Donor selection | Whoever is "available" | Ranked by predicted readiness |
+| Outreach | Mass broadcast | Targeted: 1 primary + 1 standby |
+| Hesitation handling | None | Amber alert + standby promotion |
+| Learning | None | Feedback loop on every outcome |
+| Channel | App push / SMS | WhatsApp (where donors already are) |
+
+Registry apps treat all willing donors as equivalent. CommitMatch treats donor reliability as the core signal — because a donor who commits and no-shows is worse than a donor who never replies.
+
+### vs. hospital blood bank software
+
+Hospital systems are built for inventory management, not outreach coordination. They track units on the shelf, not the humans who might donate next week. CommitMatch sits upstream of the hospital — it solves the "will anyone show up?" problem before a unit ever reaches the bank.
+
+### vs. spreadsheet / CRM workflows (how Blood Warriors worked before)
+
+Manual coordination meant coordinators had to remember which donors were reliable, call them one by one, and track responses in a spreadsheet. CommitMatch encodes that institutional knowledge — donation history, rhythm, show-rate, language preference — into a model that surfaces the right person automatically and escalates without human follow-up.
+
+### What makes the commitment score different from a simple ranking
+
+Most systems rank donors by recency ("last donated 3 months ago → probably eligible"). CommitMatch layers in:
+
+- **Donation rhythm** — each donor has a predicted window based on their personal frequency. A donor who donates every 56 days is ranked higher when their window is open, not just because time has passed.
+- **Soft-cancel detection** — reply sentiment is parsed for hedging language. An amber alert fires before a donor formally backs out, giving coordinators time to act.
+- **Long-term memory** — show-rate, preferred language, coordinator notes, and past outcomes are stored per donor and factored into future rankings. A donor who no-showed twice gets deprioritized even if they're technically eligible.
+- **Self-improving** — every confirmed donation or failure updates the model. The system gets more accurate the more it's used.
+
+### Purpose-built for thalassemia's specific pattern
+
+Thalassemia requires **regular, recurring** transfusions — not one-off emergencies. This changes what matters in a matching system:
+
+- The same small pool of donors is contacted repeatedly. Relationship and reliability history compound over time.
+- Timing is predictable: coordinators know weeks in advance when a patient will need blood. CommitMatch uses that lead time to nudge donors before the window closes.
+- Coordinator burnout from repeated manual outreach is a real problem. Automation of the routine cases frees coordinators to handle the genuinely hard ones.
+
+---
+
 ## Architecture
 
 ```
