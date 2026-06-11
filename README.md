@@ -61,6 +61,99 @@ Thalassemia requires **regular, recurring** transfusions — not one-off emergen
 
 ---
 
+## Beyond Matching: Blood Coordination Intelligence
+
+CommitMatch started as an AI-powered donor matching system, but the broader vision is to help Blood Warriors coordinate blood availability at scale — not just rank donors.
+
+### The Bridge Network Model
+
+For every patient request, CommitMatch creates a micro-network ("Bridge") of compatible donors. Instead of broadcasting to hundreds of donors, the system identifies:
+
+- **1 Primary Donor** — receives the first outreach
+- **1 Standby Donor** — notified in advance that they may be activated if the primary is unavailable
+- **Additional compatible donors** within the patient's bridge network
+
+If the primary donor declines or fails to confirm, the standby donor is automatically promoted. If both become unavailable, CommitMatch expands beyond the bridge and allocates donors from the broader compatible pool — ensuring continuity of care without coordinator intervention.
+
+This approach balances donor fatigue, response speed, and coordinator workload.
+
+### Confidence-Aware Response Analysis
+
+Donor responses are not treated as simple yes/no decisions. CommitMatch analyzes WhatsApp replies for intent and confidence. Examples:
+
+- "Yes, I can donate." → confirmed
+- "Maybe." / "Shayad." / "I'll try." / "Let me check." → **Amber Alert**
+
+Replies that indicate uncertainty trigger an Amber Alert, allowing coordinators to intervene before a donor formally declines and enabling earlier standby activation — reducing last-minute shortages.
+
+### Coordinator-In-The-Loop Operations
+
+Blood Warriors coordinators remain central to the workflow. The platform provides:
+
+- Request tracking and donor status visibility
+- Escalation monitoring and Amber alert management
+- Ranking explanations and audit trails of automated decisions
+
+Rather than replacing coordinators, CommitMatch automates repetitive coordination while keeping humans in control of critical decisions.
+
+### Donor Verification Workflow
+
+Trust and reliability improve over time. CommitMatch supports profile verification workflows where:
+
+- Donor profiles can be reviewed automatically
+- Coordinators can validate donor information
+- Reliability history contributes to future rankings
+
+Verified and consistently reliable donors receive higher prioritization within the matching process.
+
+### Awareness Engine
+
+A major challenge in blood donation is not just matching donors — it is ensuring enough donors are available when needed. CommitMatch includes an Awareness Engine that helps Blood Warriors proactively grow donor participation. The system can:
+
+- Generate awareness campaigns
+- Create social media content
+- Promote upcoming blood requirements
+- Encourage community participation
+
+This helps reduce dependency on reactive donor searches.
+
+### RSVP-Based Donor Mobilization
+
+Awareness campaigns can include RSVP workflows. Interested donors can indicate:
+
+- Availability and preferred donation windows
+- Blood group information and willingness to participate
+
+RSVP signals become additional ranking features. When a future request is created, donors who have recently expressed interest are prioritized automatically — creating a continuously refreshed pool of willing donors rather than relying solely on historical databases.
+
+### Hyperlocal Emergency Response
+
+While thalassemia care is generally planned, blood emergencies can arise unexpectedly. CommitMatch supports hyperlocal incident response workflows. For example, if a major traffic accident occurs near Shamshabad, the system can:
+
+- Mark the event as a high-priority emergency
+- Identify compatible nearby donors
+- Trigger accelerated outreach
+- Notify relevant blood banks
+- Surface emergency requests on coordinator dashboards
+
+The goal is to reduce response time during critical incidents.
+
+### Outbreak-Aware Risk Management
+
+Public health events can affect donor availability and safety. CommitMatch can incorporate outbreak intelligence and regional health alerts — viral outbreaks, regional disease clusters, public health advisories. Donors from affected regions may be temporarily deprioritized, while coordinators receive visibility into potential impacts on upcoming transfusion schedules. This is particularly important for recurring thalassemia patients who depend on uninterrupted blood access.
+
+### Geographic Operations Dashboard
+
+CommitMatch provides a map-driven operational view for coordinators. The dashboard can display:
+
+- Active blood requests and donor distribution
+- Emergency incidents and blood bank locations
+- Shortage hotspots and request escalation status
+
+This transforms donor coordination from spreadsheet management into real-time operational awareness.
+
+---
+
 ## Architecture
 
 ```
@@ -101,9 +194,14 @@ DynamoDB (9 tables)          AWS EventBridge (3 scheduled jobs)
 
 - **Commitment scoring** — multi-signal donor ranking (history, rhythm, show-rate, recency)
 - **Donation rhythm prediction** — predicts when a donor's next safe window opens
+- **Bridge network model** — targeted micro-network of primary + standby + compatible donors per request
 - **WhatsApp outreach** — automated messages with sentiment-aware reply parsing
 - **Amber alerts** — real-time UI warning when a donor reply suggests soft-cancellation
 - **Standby promotion** — auto-escalates to backup donor after 4-hour primary silence
+- **Awareness Engine** — campaign generation, social content, and RSVP-driven donor mobilization
+- **Hyperlocal emergency response** — accelerated outreach and blood bank notification for critical incidents
+- **Outbreak-aware risk management** — deprioritizes donors from regions affected by health alerts
+- **Geographic operations dashboard** — map-driven view of requests, donors, shortages, and incidents
 - **Shortage detection** — alerts on blood group shortages by city cluster, updated every 6 hours
 - **Feedback loop** — no-shows and declines are logged and used to retrain donor scores
 - **AI message generation** — Claude (via Bedrock) writes personalised WhatsApp outreach in English, Hindi, or Hinglish
@@ -237,3 +335,11 @@ commitmatch/
 └── scripts/
     └── seed_demo.py
 ```
+
+---
+
+## From Matching to Coordination Intelligence
+
+Most blood donation platforms focus on finding donors. CommitMatch focuses on **coordinating outcomes**.
+
+By combining donor reliability prediction, confidence-aware communication, bridge networks, awareness campaigns, RSVP-driven engagement, and hyperlocal response workflows, the platform helps Blood Warriors move from reactive coordination to **proactive blood availability management**.
