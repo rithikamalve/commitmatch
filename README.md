@@ -71,8 +71,9 @@ Backend (FastAPI on AWS Lambda)
     │
     ├── Matching Engine       — ranks donors by commitment score
     ├── Engagement Scorer     — predicts donation rhythm window
+    ├── Orchestration         — request lifecycle state machine
     ├── WhatsApp (Twilio)     — sends & receives messages
-    ├── AI Summarizer (Claude)— generates case summaries
+    ├── AI Layer (Bedrock)    — message generation, hesitation detection, coordinator copilot
     └── Feedback Loop         — records outcomes, tunes scores
     │
     ▼
@@ -91,7 +92,7 @@ DynamoDB (9 tables)          AWS EventBridge (3 scheduled jobs)
 | Backend | Python 3.12, FastAPI |
 | Database | AWS DynamoDB |
 | Messaging | Twilio WhatsApp API |
-| AI | Claude (Anthropic) |
+| AI | Claude Sonnet 4 via AWS Bedrock |
 | Infra | AWS Lambda, EventBridge, API Gateway WebSockets |
 
 ---
@@ -105,7 +106,9 @@ DynamoDB (9 tables)          AWS EventBridge (3 scheduled jobs)
 - **Standby promotion** — auto-escalates to backup donor after 4-hour primary silence
 - **Shortage detection** — alerts on blood group shortages by city cluster, updated every 6 hours
 - **Feedback loop** — no-shows and declines are logged and used to retrain donor scores
-- **AI case summary** — Claude-generated narrative for each request, shown to coordinators
+- **AI message generation** — Claude (via Bedrock) writes personalised WhatsApp outreach in English, Hindi, or Hinglish
+- **Coordinator copilot** — AI suggests the single best next action given current request state, with urgency level
+- **Request lifecycle state machine** — tracks each request through `created → ranked → outreach_sent → awaiting_response → confirmed/escalated`
 
 ---
 
@@ -152,8 +155,8 @@ python -m venv venv
 venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 
-# Copy and fill in your env vars
-cp .env.example .env
+# Copy and fill in your env vars (.env.example is at the repo root)
+cp ../.env.example .env
 
 python main.py
 # API runs at http://localhost:8000
@@ -182,15 +185,21 @@ python scripts/seed_demo.py
 
 ## Environment variables
 
-**Backend** — set in `.env`:
+**Backend** — copy `.env.example` from the repo root and fill in:
 
 | Variable | Description |
 |---|---|
+| `AWS_REGION` | AWS region (default: `ap-south-1`) |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | AWS credentials |
+| `DYNAMODB_ENDPOINT` | Leave blank for real DynamoDB; `http://localhost:8000` for local |
+| `BEDROCK_MODEL_ID` | Claude model ID on Bedrock |
+| `WEBSOCKET_ENDPOINT` | API Gateway WebSocket URL |
 | `TWILIO_ACCOUNT_SID` | Twilio account SID |
 | `TWILIO_AUTH_TOKEN` | Twilio auth token |
 | `TWILIO_WHATSAPP_FROM` | Sending WhatsApp number (`whatsapp:+...`) |
-| `DEMO_MODE` | `true` to skip real WhatsApp sends |
-| `DEMO_WHATSAPP` | `true` to send WhatsApp even in demo mode |
+| `DEMO_MODE` | `true` to skip real WhatsApp sends and Bedrock calls |
+| `DEMO_WHATSAPP` | `true` to enable real WhatsApp even in demo mode |
+| `CSV_PATH` | Path to donor/patient CSV (default: `data/Dataset.csv`) |
 
 **Frontend** — set in `.env`:
 
@@ -206,15 +215,16 @@ python scripts/seed_demo.py
 ```
 commitmatch/
 ├── backend/
-│   ├── ai/           — Claude-powered case summarizer
-│   ├── engagement/   — Donor rhythm & priority scoring
-│   ├── learning/     — Feedback loop (confirmation/failure recording)
-│   ├── matching/     — Core donor ranking engine
-│   ├── memory/       — Donor long-term memory store
-│   ├── messaging/    — Twilio WhatsApp send/receive
-│   ├── models/       — Pydantic schemas
-│   ├── routers/      — FastAPI route handlers
-│   └── websocket/    — Real-time push via API Gateway
+│   ├── ai/             — Bedrock: outreach messages, hesitation detection, coordinator copilot
+│   ├── engagement/     — Donor rhythm & priority scoring
+│   ├── learning/       — Feedback loop (confirmation/failure recording)
+│   ├── matching/       — Core donor ranking engine
+│   ├── memory/         — Donor long-term memory store
+│   ├── messaging/      — Twilio WhatsApp send/receive
+│   ├── models/         — Pydantic schemas
+│   ├── orchestration/  — Request lifecycle state machine
+│   ├── routers/        — FastAPI route handlers
+│   └── websocket/      — Real-time push via API Gateway
 ├── frontend/
 │   └── src/
 │       ├── components/ — AmberAlert, ShortageAlert, etc.
